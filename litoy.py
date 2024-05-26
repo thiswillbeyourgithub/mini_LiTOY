@@ -27,7 +27,7 @@ class LiTOY:
                         max_id += 1
                         entry = {
                             "entry": stripped_line,
-                            "K": 40,
+                            "K": 50,
                             "ELO": 1000,  # Sensible default ELO
                             "id": max_id
                         }
