@@ -1,8 +1,18 @@
 import fire
+import json
+import os
 
 class LiTOY:
-    def __init__(self, input_file=None):
+    def __init__(self, input_file=None, json_file=None):
         self.lines = []
+        if json_file and os.path.exists(json_file):
+            with open(json_file, 'r') as file:
+                data = json.load(file)
+                assert isinstance(data, list) and all(isinstance(item, dict) for item in data), "JSON file must be a list of dictionaries"
+            self.json_data = data
+        else:
+            self.json_data = []
+
         if input_file:
             with open(input_file, 'r') as file:
                 self.lines = file.readlines()
