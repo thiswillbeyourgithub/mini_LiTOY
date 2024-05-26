@@ -53,42 +53,45 @@ class LiTOY:
 
     def run_comparison_loop(self):
         counter = 0
-        while True:
-            entry1, entry2 = self.pick_two_entries()
-            self.display_comparison_table(entry1, entry2)
-            bindings = KeyBindings()
+        try:
+            while True:
+                entry1, entry2 = self.pick_two_entries()
+                self.display_comparison_table(entry1, entry2)
+                bindings = KeyBindings()
 
-            @bindings.add('1')
-            @bindings.add('2')
-            @bindings.add('3')
-            @bindings.add('4')
-            @bindings.add('5')
-            @bindings.add('a')
-            @bindings.add('z')
-            @bindings.add('e')
-            @bindings.add('r')
-            @bindings.add('t')
-            def _(event):
-                key = event.key_sequence[0].key
-                if key in 'azert':
-                    key = str('azert'.index(key) + 1)
-                event.app.exit(result=key)
+                @bindings.add('1')
+                @bindings.add('2')
+                @bindings.add('3')
+                @bindings.add('4')
+                @bindings.add('5')
+                @bindings.add('a')
+                @bindings.add('z')
+                @bindings.add('e')
+                @bindings.add('r')
+                @bindings.add('t')
+                def _(event):
+                    key = event.key_sequence[0].key
+                    if key in 'azert':
+                        key = str('azert'.index(key) + 1)
+                    event.app.exit(result=key)
 
-            answer = prompt(f"{self.question} (1-5 or a-z-e-r-t): ", key_bindings=bindings)
-            if answer in 'azert':
-                answer = str('azert'.index(answer) + 1)
-            answer = int(answer)
+                answer = prompt(f"{self.question} (1-5 or a-z-e-r-t): ", key_bindings=bindings)
+                if answer in 'azert':
+                    answer = str('azert'.index(answer) + 1)
+                answer = int(answer)
 
-            new_elo1, new_elo2 = self.update_elo(answer, entry1["ELO"], entry2["ELO"], entry1["K"])
-            entry1["ELO"], entry2["ELO"] = new_elo1, new_elo2
+                new_elo1, new_elo2 = self.update_elo(answer, entry1["ELO"], entry2["ELO"], entry1["K"])
+                entry1["ELO"], entry2["ELO"] = new_elo1, new_elo2
 
-            # Update K values (example logic, can be adjusted)
-            entry1["K"] = max(10, entry1["K"] - 5)
-            entry2["K"] = max(10, entry2["K"] - 5)
+                # Update K values (example logic, can be adjusted)
+                entry1["K"] = max(10, entry1["K"] - 5)
+                entry2["K"] = max(10, entry2["K"] - 5)
 
-            self.store_json_data()
+                self.store_json_data()
 
-            counter += 1
+                counter += 1
+        except KeyboardInterrupt:
+            print("\nExiting cleanly. Goodbye!")
 
     def display_comparison_table(self, entry1, entry2):
         import os
