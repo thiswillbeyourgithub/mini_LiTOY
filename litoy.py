@@ -1,17 +1,25 @@
 import fire
 import json
 import os
+import logging
 from rich.console import Console
+
+# Configure logging
+logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+log = logging.getLogger()
 from prompt_toolkit import prompt
 from prompt_toolkit.key_binding import KeyBindings
 from rich.table import Table
 
 class LiTOY:
     def __init__(self, input_file: str = None, json_file: str = None, question: str = "most important?", mode: str = "review"):
+        log.info("Initializing LiTOY with input_file=%s, json_file=%s, question=%s, mode=%s", input_file, json_file, question, mode)
         if not input_file and not json_file:
+            log.error("Either input_file or json_file must be provided")
             raise ValueError("Either input_file or json_file must be provided")
 
         if not json_file:
+            log.error("json_file must be provided")
             raise ValueError("json_file must be provided")
 
         self.json_file = json_file
@@ -19,6 +27,7 @@ class LiTOY:
         self.mode = mode
         self.lines = []
         if json_file and os.path.exists(json_file):
+            log.info("Loading data from %s", json_file)
             with open(json_file, 'r') as file:
                 data = json.load(file)
                 assert isinstance(data, list) and all(isinstance(item, dict) for item in data), "JSON file must be a list of dictionaries"
@@ -30,6 +39,7 @@ class LiTOY:
 
 
         if input_file:
+            log.info("Reading input from %s", input_file)
             with open(input_file, 'r') as file:
                 for line in file:
                     stripped_line = line.lstrip('-#').strip()
@@ -45,17 +55,22 @@ class LiTOY:
 
         self.console = Console()
         if self.mode == "review":
+            log.info("Starting comparison loop")
             self.run_comparison_loop()
         elif self.mode == "export":
+            log.info("Exporting to markdown")
             self.export_to_markdown()
         else:
+            log.error("Invalid mode: %s", self.mode)
             raise ValueError("Invalid mode. Use 'review' or 'export'.")
 
     def run_comparison_loop(self) -> None:
         counter = 0
         try:
             while True:
+                log.info("Picking two entries for comparison")
                 entry1, entry2 = self.pick_two_entries()
+                log.info("Displaying comparison table for entries %d and %d", entry1["id"], entry2["id"])
                 self.display_comparison_table(entry1, entry2)
                 bindings = KeyBindings()
 
@@ -76,21 +91,25 @@ class LiTOY:
                     event.app.exit(result=key)
 
                 answer = prompt(f"{self.question} (1-5 or a-z-e-r-t): ", key_bindings=bindings)
+                log.info("User selected answer: %s", answer)
                 if answer in 'azert':
                     answer = str('azert'.index(answer) + 1)
                 answer = int(answer)
 
                 new_elo1, new_elo2 = self.update_elo(answer, entry1["ELO"], entry2["ELO"], entry1["K"])
                 entry1["ELO"], entry2["ELO"] = new_elo1, new_elo2
+                log.info("Updated ELOs: entry1=%d, entry2=%d", new_elo1, new_elo2)
 
                 # Update K values (example logic, can be adjusted)
                 entry1["K"] = max(10, entry1["K"] - 5)
                 entry2["K"] = max(10, entry2["K"] - 5)
 
                 self.store_json_data()
+                log.info("Stored JSON data")
 
                 counter += 1
         except KeyboardInterrupt:
+            log.info("Exiting due to keyboard interrupt")
             raise SystemExit("\nExiting. Goodbye!")
 
     def display_comparison_table(self, entry1: dict, entry2: dict) -> None:
@@ -166,15 +185,18 @@ class LiTOY:
         markdown_lines = [f"- {entry['entry']}" for entry in sorted_entries]
 
         markdown_file = self.json_file.replace('.json', '.md')
+        log.info("Exporting to markdown file: %s", markdown_file)
         if os.path.exists(markdown_file):
             confirm = input(f"{markdown_file} already exists. Do you want to overwrite it? (y/n): ")
             if confirm.lower() != 'y':
+                log.info("Export cancelled by user")
                 print("Export cancelled.")
                 return
 
         with open(markdown_file, 'w', encoding='utf-8') as file:
             file.write("\n".join(markdown_lines))
 
+        log.info("Exported to %s", markdown_file)
         print(f"Exported to {markdown_file}")
 
 if __name__ == "__main__":
