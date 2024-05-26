@@ -57,10 +57,22 @@ class LiTOY:
             @bindings.add('3')
             @bindings.add('4')
             @bindings.add('5')
+            @bindings.add('a')
+            @bindings.add('z')
+            @bindings.add('e')
+            @bindings.add('r')
+            @bindings.add('t')
             def _(event):
+                key = event.key_sequence[0].key
+                if key in 'azert':
+                    key = str('azert'.index(key) + 1)
+                event.app.exit(result=key)
                 event.app.exit(result=event.key_sequence[0].key)
 
-            answer = int(prompt("Which entry do you prefer? (1-5): ", key_bindings=bindings))
+            answer = prompt("Which entry do you prefer? (1-5 or a-z-e-r-t): ", key_bindings=bindings)
+            if answer in 'azert':
+                answer = str('azert'.index(answer) + 1)
+            answer = int(answer)
 
             new_elo1, new_elo2 = self.update_elo(answer, entry1["ELO"], entry2["ELO"], entry1["K"])
             entry1["ELO"], entry2["ELO"] = new_elo1, new_elo2
