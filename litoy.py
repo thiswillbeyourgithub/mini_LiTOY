@@ -3,7 +3,8 @@ import json
 import os
 
 class LiTOY:
-    def __init__(self, input_file=None, json_file=None):
+    def __init__(self, input_file=None, json_file=None, question="most important?"):
+        self.question = question
         self.lines = []
         if json_file and os.path.exists(json_file):
             with open(json_file, 'r') as file:
