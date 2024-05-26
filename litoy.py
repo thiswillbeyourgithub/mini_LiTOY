@@ -79,4 +79,4 @@ class LiTOY:
             entry1, entry2 = entry2, entry1
 
         return entry1, entry2
-    fire.Fire(LiTOY)
+fire.Fire(LiTOY)
