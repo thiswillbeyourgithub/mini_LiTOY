@@ -91,7 +91,7 @@ class LiTOY:
 
                 counter += 1
         except KeyboardInterrupt:
-            print("\nExiting cleanly. Goodbye!")
+            raise SystemExit("\nExiting cleanly. Goodbye!")
 
     def display_comparison_table(self, entry1, entry2):
         import os
