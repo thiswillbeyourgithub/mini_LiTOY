@@ -19,7 +19,7 @@ class LiTOY:
             with open(input_file, 'r') as file:
                 for line in file:
                     stripped_line = line.strip()
-                    if stripped_line:
+                    if stripped_line and not any(entry["entry"] == stripped_line for entry in self.json_data):
                         max_id += 1
                         entry = {
                             "entry": stripped_line,
