@@ -32,9 +32,9 @@ class LiTOY:
                         self.json_data.append(entry)
 
         counter = 0
-        while counter < 10:  # Arbitrary counter limit to prevent infinite loops
+        while True:  # Infinite loop, counter is just in case for later
             entry1, entry2 = self.pick_two_entries()
-            counter += 1
+            counter += 1  # Increment counter
 
     def update_elo(self, answer, elo1, elo2):
         """
