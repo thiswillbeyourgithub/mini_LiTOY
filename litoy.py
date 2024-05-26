@@ -85,7 +85,9 @@ class LiTOY:
             counter += 1
 
     def display_comparison_table(self, entry1, entry2):
-        table = Table(title="Comparison")
+        import os
+        terminal_width = os.get_terminal_size().columns
+        table = Table(title="Comparison", width=terminal_width)
 
         table.add_column("ID", justify="center", style="cyan", no_wrap=True)
         table.add_column("Entry", justify="left", style="magenta")
