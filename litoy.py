@@ -75,7 +75,7 @@ class LiTOY:
 
         self.console.print(table)
 
-    def update_elo(self, answer, elo1, elo2):
+    def update_elo(self, answer, elo1, elo2, k):
         """
         Update ELO scores based on the answer.
         
