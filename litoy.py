@@ -6,6 +6,9 @@ from rich.table import Table
 
 class LiTOY:
     def __init__(self, input_file=None, json_file=None, question="most important?"):
+        if not input_file and not json_file:
+            raise ValueError("Either input_file or json_file must be provided")
+
         self.question = question
         self.lines = []
         if json_file and os.path.exists(json_file):
