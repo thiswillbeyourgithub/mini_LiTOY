@@ -16,10 +16,6 @@ class LiTOY:
 
         max_id = max((item.get("id", 0) for item in self.json_data), default=0)
 
-        counter = 0
-        while counter < 10:  # Arbitrary counter limit to prevent infinite loops
-            entry1, entry2 = self.pick_two_entries()
-            counter += 1
 
         if input_file:
             with open(input_file, 'r') as file:
@@ -34,6 +30,11 @@ class LiTOY:
                             "id": max_id
                         }
                         self.json_data.append(entry)
+
+        counter = 0
+        while counter < 10:  # Arbitrary counter limit to prevent infinite loops
+            entry1, entry2 = self.pick_two_entries()
+            counter += 1
 
     def update_elo(self, answer, elo1, elo2):
         """
