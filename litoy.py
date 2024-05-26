@@ -41,6 +41,25 @@ class LiTOY:
         while True:
             entry1, entry2 = self.pick_two_entries()
             self.display_comparison_table(entry1, entry2)
+            while True:
+                try:
+                    answer = int(self.console.input("[bold yellow]Which entry do you prefer? (1-5): [/bold yellow]"))
+                    if 1 <= answer <= 5:
+                        break
+                    else:
+                        self.console.print("[bold red]Invalid input. Please enter a number between 1 and 5.[/bold red]")
+                except ValueError:
+                    self.console.print("[bold red]Invalid input. Please enter a number between 1 and 5.[/bold red]")
+
+            new_elo1, new_elo2 = self.update_elo(answer, entry1["ELO"], entry2["ELO"])
+            entry1["ELO"], entry2["ELO"] = new_elo1, new_elo2
+
+            # Update K values (example logic, can be adjusted)
+            entry1["K"] = max(1, entry1["K"] - 1)
+            entry2["K"] = max(1, entry2["K"] - 1)
+
+            self.store_json_data()
+
             counter += 1
 
     def display_comparison_table(self, entry1, entry2):
@@ -101,4 +120,9 @@ class LiTOY:
             entry2 = entry3
 
         return entry1, entry2
+    def store_json_data(self):
+        if hasattr(self, 'json_file') and self.json_file:
+            with open(self.json_file, 'w', encoding='utf-8') as file:
+                json.dump(self.json_data, file, ensure_ascii=False, indent=4)
+
 fire.Fire(LiTOY)
