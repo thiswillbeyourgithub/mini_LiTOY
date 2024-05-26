@@ -34,22 +34,27 @@ class LiTOY:
                         self.json_data.append(entry)
 
         self.console = Console()
+        self.run_comparison_loop()
+
+    def run_comparison_loop(self):
         counter = 0
-        while True:  # Infinite loop, counter is just in case for later
+        while True:
             entry1, entry2 = self.pick_two_entries()
-            table = Table(title="Comparison")
+            self.display_comparison_table(entry1, entry2)
+            counter += 1
 
-            table.add_column("ID", justify="center", style="cyan", no_wrap=True)
-            table.add_column("Entry", justify="center", style="magenta")
-            table.add_column("K", justify="center", style="green")
-            table.add_column("ELO", justify="center", style="red")
+    def display_comparison_table(self, entry1, entry2):
+        table = Table(title="Comparison")
 
-            table.add_row(str(entry1["id"]), entry1["entry"], str(entry1["K"]), str(entry1["ELO"]))
-            table.add_row(str(entry2["id"]), entry2["entry"], str(entry2["K"]), str(entry2["ELO"]))
+        table.add_column("ID", justify="center", style="cyan", no_wrap=True)
+        table.add_column("Entry", justify="center", style="magenta")
+        table.add_column("K", justify="center", style="green")
+        table.add_column("ELO", justify="center", style="red")
 
-            self.console.print(table)
+        table.add_row(str(entry1["id"]), entry1["entry"], str(entry1["K"]), str(entry1["ELO"]))
+        table.add_row(str(entry2["id"]), entry2["entry"], str(entry2["K"]), str(entry2["ELO"]))
 
-            counter += 1  # Increment counter
+        self.console.print(table)
 
     def update_elo(self, answer, elo1, elo2):
         """
