@@ -121,8 +121,12 @@ class LiTOY:
 
         return entry1, entry2
     def store_json_data(self):
-        if hasattr(self, 'json_file') and self.json_file:
-            with open(self.json_file, 'w', encoding='utf-8') as file:
-                json.dump(self.json_data, file, ensure_ascii=False, indent=4)
+        if not hasattr(self, 'json_file') or not self.json_file:
+            raise AttributeError("Missing attribute: 'json_file'")
+        if not hasattr(self, 'json_data') or not isinstance(self.json_data, list):
+            raise AttributeError("Missing or invalid attribute: 'json_data'")
+
+        with open(self.json_file, 'w', encoding='utf-8') as file:
+            json.dump(self.json_data, file, ensure_ascii=False, indent=4)
 
 fire.Fire(LiTOY)
