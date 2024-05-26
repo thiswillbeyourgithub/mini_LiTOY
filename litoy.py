@@ -69,7 +69,7 @@ class LiTOY:
                 event.app.exit(result=key)
                 event.app.exit(result=event.key_sequence[0].key)
 
-            answer = prompt("Which entry do you prefer? (1-5 or a-z-e-r-t): ", key_bindings=bindings)
+            answer = prompt(f"{self.question} (1-5 or a-z-e-r-t): ", key_bindings=bindings)
             if answer in 'azert':
                 answer = str('azert'.index(answer) + 1)
             answer = int(answer)
