@@ -1,6 +1,8 @@
 import fire
 import json
 import os
+from rich.console import Console
+from rich.table import Table
 
 class LiTOY:
     def __init__(self, input_file=None, json_file=None, question="most important?"):
@@ -31,9 +33,22 @@ class LiTOY:
                         }
                         self.json_data.append(entry)
 
+        self.console = Console()
         counter = 0
         while True:  # Infinite loop, counter is just in case for later
             entry1, entry2 = self.pick_two_entries()
+            table = Table(title="Comparison")
+
+            table.add_column("ID", justify="center", style="cyan", no_wrap=True)
+            table.add_column("Entry", justify="center", style="magenta")
+            table.add_column("K", justify="center", style="green")
+            table.add_column("ELO", justify="center", style="red")
+
+            table.add_row(str(entry1["id"]), entry1["entry"], str(entry1["K"]), str(entry1["ELO"]))
+            table.add_row(str(entry2["id"]), entry2["entry"], str(entry2["K"]), str(entry2["ELO"]))
+
+            self.console.print(table)
+
             counter += 1  # Increment counter
 
     def update_elo(self, answer, elo1, elo2):
