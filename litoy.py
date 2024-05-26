@@ -7,7 +7,7 @@ from prompt_toolkit.key_binding import KeyBindings
 from rich.table import Table
 
 class LiTOY:
-    def __init__(self, input_file=None, json_file=None, question="most important?", mode="review"):
+    def __init__(self, input_file: str = None, json_file: str = None, question: str = "most important?", mode: str = "review"):
         if not input_file and not json_file:
             raise ValueError("Either input_file or json_file must be provided")
 
@@ -51,7 +51,7 @@ class LiTOY:
         else:
             raise ValueError("Invalid mode. Use 'review' or 'export'.")
 
-    def run_comparison_loop(self):
+    def run_comparison_loop(self) -> None:
         counter = 0
         try:
             while True:
@@ -93,7 +93,7 @@ class LiTOY:
         except KeyboardInterrupt:
             raise SystemExit("\nExiting. Goodbye!")
 
-    def display_comparison_table(self, entry1, entry2):
+    def display_comparison_table(self, entry1: dict, entry2: dict) -> None:
         import os
         terminal_width = os.get_terminal_size().columns
         table = Table(title="Comparison", width=terminal_width)
@@ -108,7 +108,7 @@ class LiTOY:
 
         self.console.print(table)
 
-    def update_elo(self, answer, elo1, elo2, k):
+    def update_elo(self, answer: int, elo1: int, elo2: int, k: int) -> tuple[int, int]:
         """
         Update ELO scores based on the answer.
         
@@ -131,7 +131,7 @@ class LiTOY:
 
         return round(new_elo1), round(new_elo2)
 
-    def pick_two_entries(self):
+    def pick_two_entries(self) -> tuple[dict, dict]:
         """
         Pick three entries at random, then return the first of the three and the one with the highest K among the other two.
         
@@ -152,7 +152,7 @@ class LiTOY:
             entry2 = entry3
 
         return entry1, entry2
-    def store_json_data(self):
+    def store_json_data(self) -> None:
         if not hasattr(self, 'json_file') or not self.json_file:
             raise AttributeError("Missing attribute: 'json_file'")
         if not hasattr(self, 'json_data') or not isinstance(self.json_data, list):
@@ -161,7 +161,7 @@ class LiTOY:
         with open(self.json_file, 'w', encoding='utf-8') as file:
             json.dump(self.json_data, file, ensure_ascii=False, indent=4)
 
-    def export_to_markdown(self):
+    def export_to_markdown(self) -> None:
         sorted_entries = sorted(self.json_data, key=lambda x: x["ELO"], reverse=True)
         markdown_lines = [f"- {entry['entry']}" for entry in sorted_entries]
 
