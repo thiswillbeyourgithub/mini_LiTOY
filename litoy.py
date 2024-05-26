@@ -27,7 +27,7 @@ class LiTOY:
                         max_id += 1
                         entry = {
                             "entry": stripped_line,
-                            "K": 50,
+                            "K": 32,
                             "ELO": 1000,  # Sensible default ELO
                             "id": max_id
                         }
@@ -51,7 +51,7 @@ class LiTOY:
                 except ValueError:
                     self.console.print("[bold red]Invalid input. Please enter a number between 1 and 5.[/bold red]")
 
-            new_elo1, new_elo2 = self.update_elo(answer, entry1["ELO"], entry2["ELO"])
+            new_elo1, new_elo2 = self.update_elo(answer, entry1["ELO"], entry2["ELO"], entry1["K"])
             entry1["ELO"], entry2["ELO"] = new_elo1, new_elo2
 
             # Update K values (example logic, can be adjusted)
