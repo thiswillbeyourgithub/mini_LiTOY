@@ -34,7 +34,7 @@ class LiTOY:
                         max_id += 1
                         entry = {
                             "entry": stripped_line,
-                            "K": 32,
+                            "K": 30,
                             "ELO": 1000,  # Sensible default ELO
                             "id": max_id
                         }
@@ -62,8 +62,8 @@ class LiTOY:
             entry1["ELO"], entry2["ELO"] = new_elo1, new_elo2
 
             # Update K values (example logic, can be adjusted)
-            entry1["K"] = max(1, entry1["K"] - 10)
-            entry2["K"] = max(1, entry2["K"] - 10)
+            entry1["K"] = max(10, entry1["K"] - 5)
+            entry2["K"] = max(10, entry2["K"] - 5)
 
             self.store_json_data()
 
