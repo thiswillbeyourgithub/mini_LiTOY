@@ -9,6 +9,9 @@ class LiTOY:
         if not input_file and not json_file:
             raise ValueError("Either input_file or json_file must be provided")
 
+        if not json_file:
+            raise ValueError("json_file must be provided")
+
         self.question = question
         self.lines = []
         if json_file and os.path.exists(json_file):
