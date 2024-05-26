@@ -89,7 +89,7 @@ class LiTOY:
         table = Table(title="Comparison")
 
         table.add_column("ID", justify="center", style="cyan", no_wrap=True)
-        table.add_column("Entry", justify="center", style="magenta")
+        table.add_column("Entry", justify="left", style="magenta")
         table.add_column("K", justify="center", style="green")
         table.add_column("ELO", justify="center", style="red")
 
