@@ -13,9 +13,21 @@ class LiTOY:
         else:
             self.json_data = []
 
+        max_id = max((item.get("id", 0) for item in self.json_data), default=0)
+
         if input_file:
             with open(input_file, 'r') as file:
-                self.lines = file.readlines()
+                for line in file:
+                    stripped_line = line.strip()
+                    if stripped_line:
+                        max_id += 1
+                        entry = {
+                            "entry": stripped_line,
+                            "K": 40,
+                            "ELO": 1000,  # Sensible default ELO
+                            "id": max_id
+                        }
+                        self.json_data.append(entry)
 
     def update_elo(self, answer, elo1, elo2):
         """
