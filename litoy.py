@@ -2,6 +2,8 @@ import fire
 import json
 import os
 from rich.console import Console
+from prompt_toolkit import prompt
+from prompt_toolkit.key_binding import KeyBindings
 from rich.table import Table
 
 class LiTOY:
@@ -48,15 +50,17 @@ class LiTOY:
         while True:
             entry1, entry2 = self.pick_two_entries()
             self.display_comparison_table(entry1, entry2)
-            while True:
-                try:
-                    answer = int(self.console.input("[bold yellow]Which entry do you prefer? (1-5): [/bold yellow]"))
-                    if 1 <= answer <= 5:
-                        break
-                    else:
-                        self.console.print("[bold red]Invalid input. Please enter a number between 1 and 5.[/bold red]")
-                except ValueError:
-                    self.console.print("[bold red]Invalid input. Please enter a number between 1 and 5.[/bold red]")
+            bindings = KeyBindings()
+
+            @bindings.add('1')
+            @bindings.add('2')
+            @bindings.add('3')
+            @bindings.add('4')
+            @bindings.add('5')
+            def _(event):
+                event.app.exit(result=event.key_sequence[0].key)
+
+            answer = int(prompt("Which entry do you prefer? (1-5): ", key_bindings=bindings))
 
             new_elo1, new_elo2 = self.update_elo(answer, entry1["ELO"], entry2["ELO"], entry1["K"])
             entry1["ELO"], entry2["ELO"] = new_elo1, new_elo2
