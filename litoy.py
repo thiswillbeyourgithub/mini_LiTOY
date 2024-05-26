@@ -166,6 +166,12 @@ class LiTOY:
         markdown_lines = [f"- {entry['entry']}" for entry in sorted_entries]
 
         markdown_file = self.json_file.replace('.json', '.md')
+        if os.path.exists(markdown_file):
+            confirm = input(f"{markdown_file} already exists. Do you want to overwrite it? (y/n): ")
+            if confirm.lower() != 'y':
+                print("Export cancelled.")
+                return
+
         with open(markdown_file, 'w', encoding='utf-8') as file:
             file.write("\n".join(markdown_lines))
 
