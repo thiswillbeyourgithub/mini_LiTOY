@@ -67,7 +67,6 @@ class LiTOY:
                 if key in 'azert':
                     key = str('azert'.index(key) + 1)
                 event.app.exit(result=key)
-                event.app.exit(result=event.key_sequence[0].key)
 
             answer = prompt(f"{self.question} (1-5 or a-z-e-r-t): ", key_bindings=bindings)
             if answer in 'azert':
