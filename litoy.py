@@ -7,7 +7,7 @@ from prompt_toolkit.key_binding import KeyBindings
 from rich.table import Table
 
 class LiTOY:
-    def __init__(self, input_file=None, json_file=None, question="most important?"):
+    def __init__(self, input_file=None, json_file=None, question="most important?", mode="review"):
         if not input_file and not json_file:
             raise ValueError("Either input_file or json_file must be provided")
 
@@ -16,6 +16,7 @@ class LiTOY:
 
         self.json_file = json_file
         self.question = question
+        self.mode = mode
         self.lines = []
         if json_file and os.path.exists(json_file):
             with open(json_file, 'r') as file:
@@ -43,7 +44,12 @@ class LiTOY:
                         self.json_data.append(entry)
 
         self.console = Console()
-        self.run_comparison_loop()
+        if self.mode == "review":
+            self.run_comparison_loop()
+        elif self.mode == "export":
+            self.export_to_markdown()
+        else:
+            raise ValueError("Invalid mode. Use 'review' or 'export'.")
 
     def run_comparison_loop(self):
         counter = 0
@@ -152,4 +158,15 @@ class LiTOY:
         with open(self.json_file, 'w', encoding='utf-8') as file:
             json.dump(self.json_data, file, ensure_ascii=False, indent=4)
 
-fire.Fire(LiTOY)
+    def export_to_markdown(self):
+        sorted_entries = sorted(self.json_data, key=lambda x: x["ELO"], reverse=True)
+        markdown_lines = [f"- {entry['entry']}" for entry in sorted_entries]
+
+        markdown_file = self.json_file.replace('.json', '.md')
+        with open(markdown_file, 'w', encoding='utf-8') as file:
+            file.write("\n".join(markdown_lines))
+
+        print(f"Exported to {markdown_file}")
+
+if __name__ == "__main__":
+    fire.Fire(LiTOY)
