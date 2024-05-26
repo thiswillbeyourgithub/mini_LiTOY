@@ -16,6 +16,11 @@ class LiTOY:
 
         max_id = max((item.get("id", 0) for item in self.json_data), default=0)
 
+        counter = 0
+        while counter < 10:  # Arbitrary counter limit to prevent infinite loops
+            entry1, entry2 = self.pick_two_entries()
+            counter += 1
+
         if input_file:
             with open(input_file, 'r') as file:
                 for line in file:
@@ -54,5 +59,24 @@ class LiTOY:
 
         return round(new_elo1), round(new_elo2)
 
-if __name__ == "__main__":
+    def pick_two_entries(self):
+        """
+        Pick two entries at random, check the one with the highest K, and return two entries as a tuple of two dicts.
+        
+        :return: tuple, two entries as dictionaries
+        """
+        import random
+
+        if len(self.json_data) < 2:
+            raise ValueError("Not enough entries to pick from")
+
+        entry1 = random.choice(self.json_data)
+        entry2 = random.choice(self.json_data)
+        while entry2 == entry1:
+            entry2 = random.choice(self.json_data)
+
+        if entry1["K"] < entry2["K"]:
+            entry1, entry2 = entry2, entry1
+
+        return entry1, entry2
     fire.Fire(LiTOY)
