@@ -18,24 +18,24 @@ class LiTOY:
     def __init__(
         self,
         input_file: str = None,
-        json_file: str = None,
+        output_json: str = None,
         question: str = "What's the relative importance of those items to you?'",
         ):
-        log.info(f"Initializing LiTOY with input_file={input_file}, json_file={json_file}, question={question}")
-        if not input_file and not json_file:
-            log.error("Either input_file or json_file must be provided")
-            raise ValueError("Either input_file or json_file must be provided")
+        log.info(f"Initializing LiTOY with input_file={input_file}, output_json={output_json}, question={question}")
+        if not input_file and not output_json:
+            log.error("Either input_file or output_json must be provided")
+            raise ValueError("Either input_file or output_json must be provided")
 
-        if not json_file:
-            log.error("json_file must be provided")
-            raise ValueError("json_file must be provided")
+        if not output_json:
+            log.error("output_json must be provided")
+            raise ValueError("output_json must be provided")
 
-        self.json_file = json_file
+        self.output_json = output_json
         self.question = question
         self.lines = []
-        if json_file and os.path.exists(json_file):
-            log.info("Loading data from %s", json_file)
-            with open(json_file, 'r') as file:
+        if output_json and os.path.exists(output_json):
+            log.info("Loading data from %s", output_json)
+            with open(output_json, 'r') as file:
                 data = json.load(file)
                 assert isinstance(data, list) and all(isinstance(item, dict) for item in data), "JSON file must be a list of dictionaries"
             self.json_data = data
@@ -178,12 +178,12 @@ class LiTOY:
 
     @typechecked
     def store_json_data(self) -> None:
-        if not hasattr(self, 'json_file') or not self.json_file:
-            raise AttributeError("Missing attribute: 'json_file'")
+        if not hasattr(self, 'output_json') or not self.output_json:
+            raise AttributeError("Missing attribute: 'output_json'")
         if not hasattr(self, 'json_data') or not isinstance(self.json_data, list):
             raise AttributeError("Missing or invalid attribute: 'json_data'")
 
-        with open(self.json_file, 'w', encoding='utf-8') as file:
+        with open(self.output_json, 'w', encoding='utf-8') as file:
             json.dump(self.json_data, file, ensure_ascii=False, indent=4)
 
 if __name__ == "__main__":
