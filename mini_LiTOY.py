@@ -1,9 +1,9 @@
-from typing import Optional
+from typing import Optional, Callable, Union
 from typeguard import typechecked
 import os
 import fire
 import json
-from pathlib import Path
+from pathlib import Path, PosixPath
 import logging
 from rich.console import Console
 from rich.table import Table
@@ -23,9 +23,10 @@ class mini_LiTOY:
     @typechecked
     def __init__(
         self,
-        input_file: Optional[str] = None,
-        output_json: Optional[str] = None,
+        input_file: Optional[Union[PosixPath, str]] = None,
+        output_json: Optional[Union[PosixPath, str]] = None,
         question: str = "What's the relative importance of those items to you?'",
+        callback: Optional[Callable] = None,
         ):
         log.info(f"Initializing mini_LiTOY with input_file={input_file}, output_json={output_json}, question={question}")
         if not input_file and not output_json:
@@ -38,6 +39,7 @@ class mini_LiTOY:
 
         self.output_json = output_json
         self.question = question
+        self.callback = callback
 
         # load previous data
         self.lines = []
@@ -152,6 +154,14 @@ class mini_LiTOY:
                 log.info("Stored JSON data")
 
                 counter += 1
+
+                if self.callback is not None:
+                    log.info("Calling callback")
+                    self.callback(
+                        self,
+                        entry1,
+                        entry2,
+                    )
         except KeyboardInterrupt:
             log.info("Exiting due to keyboard interrupt")
             raise SystemExit("\nExiting. Goodbye!")
