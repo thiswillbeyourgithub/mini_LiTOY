@@ -100,7 +100,7 @@ class mini_LiTOY:
                 clear()
                 log.info("Picking two entries for comparison")
                 entry1, entry2 = self.pick_two_entries()
-                log.info("Displaying comparison table for entries %d and %d", entry1["id"], entry2["id"])
+                log.info(f"Displaying comparison table for entries {entry1['id']} and {entry2['id']}")
                 self.display_comparison_table(entry1, entry2)
                 bindings = KeyBindings()
 
