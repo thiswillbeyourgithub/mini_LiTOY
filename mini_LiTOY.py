@@ -19,13 +19,13 @@ log = logging.getLogger()
 class mini_LiTOY:
     VERSION = "0.0.1"
     inertia_values = [30, 25, 20, 15, 10]
+    question = "What's the relative importance of those items to you?'"
 
     @typechecked
     def __init__(
         self,
         input_file: Optional[Union[PosixPath, str]] = None,
         output_json: Optional[Union[PosixPath, str]] = None,
-        question: str = "What's the relative importance of those items to you?'",
         callback: Optional[Callable] = None,
         ):
         """
@@ -34,10 +34,9 @@ class mini_LiTOY:
 
         :param input_file: Path a txt file, parsed as one entry per line, ignoring empty lines and those starting with #
         :param output_json: Path the json file that will be updated as ELOs get updated
-        :param question: Question to ask to the user
         :param callback: Callable, will be called just after updating the json file. This is intended for use when imported. See examples folder
         """
-        log.info(f"Initializing mini_LiTOY with input_file={input_file}, output_json={output_json}, question={question}")
+        log.info(f"Initializing mini_LiTOY with input_file={input_file}, output_json={output_json}")
         if not input_file and not output_json:
             log.error("Either input_file or output_json must be provided")
             raise ValueError("Either input_file or output_json must be provided")
@@ -47,7 +46,6 @@ class mini_LiTOY:
             raise ValueError("output_json must be provided")
 
         self.output_json = output_json
-        self.question = question
         self.callback = callback
 
         # load previous data
