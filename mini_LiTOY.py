@@ -16,6 +16,7 @@ log = logging.getLogger()
 
 class mini_LiTOY:
     VERSION = "0.0.1"
+    inertia_values = [30, 25, 20, 15, 10]
 
     @typechecked
     def __init__(
@@ -58,7 +59,7 @@ class mini_LiTOY:
                         max_id += 1
                         entry = {
                             "entry": stripped_line,
-                            "K": 30,
+                            "n_comparison": 0,
                             "ELO": 1000,  # Sensible default ELO
                             "id": max_id
                         }
@@ -101,13 +102,17 @@ class mini_LiTOY:
                     answer = str('azert'.index(answer) + 1)
                 answer = int(answer)
 
-                new_elo1, new_elo2 = self.update_elo(answer, entry1["ELO"], entry2["ELO"], entry1["K"])
+                n_comparison_1 = entry1["n_comparison"]
+                K1 = self.inertia_values[n_comparison_1] if n_comparison_1 <= len(self.inertia_values) else self.inertia_values[-1]
+                n_comparison_2 = entry2["n_comparison"]
+                K2 = self.inertia_values[n_comparison_2] if n_comparison_2 <= len(self.inertia_values) else self.inertia_values[-1]
+
+                new_elo1, new_elo2 = self.update_elo(answer, entry1["ELO"], entry2["ELO"], K1)
                 entry1["ELO"], entry2["ELO"] = new_elo1, new_elo2
                 log.info("Updated ELOs: entry1=%d, entry2=%d", new_elo1, new_elo2)
 
-                # Update K values (example logic, can be adjusted)
-                entry1["K"] = max(10, entry1["K"] - 5)
-                entry2["K"] = max(10, entry2["K"] - 5)
+                entry1["n_comparison"] += 1
+                entry2["n_comparison"] += 1
 
                 self.store_json_data()
                 log.info("Stored JSON data")
@@ -124,11 +129,11 @@ class mini_LiTOY:
 
         table.add_column("ID", justify="center", style="cyan", no_wrap=True)
         table.add_column("Entry", justify="left", style="magenta")
-        table.add_column("K", justify="center", style="green")
+        table.add_column("Nb compar", justify="center", style="green")
         table.add_column("ELO", justify="center", style="red")
 
-        table.add_row(str(entry1["id"]), entry1["entry"], str(entry1["K"]), str(entry1["ELO"]))
-        table.add_row(str(entry2["id"]), entry2["entry"], str(entry2["K"]), str(entry2["ELO"]))
+        table.add_row(str(entry1["id"]), entry1["entry"], str(entry1["n_comparison"]), str(entry1["ELO"]))
+        table.add_row(str(entry2["id"]), entry2["entry"], str(entry2["n_comparison"]), str(entry2["ELO"]))
 
         self.console.print(table)
 
@@ -159,7 +164,7 @@ class mini_LiTOY:
     @typechecked
     def pick_two_entries(self) -> tuple[dict, dict]:
         """
-        Pick three entries at random, then return the first of the three and the one with the highest K among the other two.
+        Pick three entries at random, then return the first of the three and the one with the lowest n_comparison between the other two.
         
         :return: tuple, two entries as dictionaries
         """
@@ -174,10 +179,11 @@ class mini_LiTOY:
         entry2 = entries[1]
         entry3 = entries[2]
 
-        if entry2["K"] < entry3["K"]:
-            entry2 = entry3
-
-        return entry1, entry2
+        assert entry2 != entry1 and entry3 != entry1
+        if entry2["n_comparison"] <= entry3["n_comparison"]:
+            return entry1, entry2
+        else:
+            return entry1, entry3
 
     @typechecked
     def store_json_data(self) -> None:
