@@ -3,13 +3,14 @@ import json
 import os
 import logging
 from rich.console import Console
+from rich.table import Table
+
+from prompt_toolkit import prompt
+from prompt_toolkit.key_binding import KeyBindings
 
 # Configure logging
 logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 log = logging.getLogger()
-from prompt_toolkit import prompt
-from prompt_toolkit.key_binding import KeyBindings
-from rich.table import Table
 
 class LiTOY:
     def __init__(self, input_file: str = None, json_file: str = None, question: str = "most important?", mode: str = "review"):
