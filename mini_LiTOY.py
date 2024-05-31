@@ -54,11 +54,13 @@ class mini_LiTOY:
             log.info("Reading input from %s", input_file)
             with open(input_file, 'r') as file:
                 for line in file:
-                    stripped_line = line.lstrip('-#').strip()
-                    if stripped_line and not any(entry["entry"] == stripped_line for entry in self.json_data):
+                    line = line.stripped()
+                    if (not line) or line.startswith("#"):
+                        continue
+                    if not any(entry["entry"] == line for entry in self.json_data):
                         max_id += 1
                         entry = {
-                            "entry": stripped_line,
+                            "entry": line,
                             "n_comparison": 0,
                             "ELO": 1000,  # Sensible default ELO
                             "id": max_id,
