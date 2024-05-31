@@ -1,7 +1,8 @@
 from typeguard import typechecked
+import os
 import fire
 import json
-import os
+from pathlib import Path
 import logging
 from rich.console import Console
 from rich.table import Table
@@ -32,8 +33,9 @@ class LiTOY:
 
         self.output_json = output_json
         self.question = question
+
         self.lines = []
-        if output_json and os.path.exists(output_json):
+        if output_json and Path(output_json).exists():
             log.info("Loading data from %s", output_json)
             with open(output_json, 'r') as file:
                 data = json.load(file)
@@ -115,7 +117,6 @@ class LiTOY:
 
     @typechecked
     def display_comparison_table(self, entry1: dict, entry2: dict) -> None:
-        import os
         terminal_width = os.get_terminal_size().columns
         table = Table(title="Comparison", width=terminal_width)
 
