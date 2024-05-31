@@ -165,8 +165,8 @@ class mini_LiTOY:
         """
         import random
 
-        if len(self.json_data) < 2:
-            raise ValueError("Not enough entries to pick from")
+        if len(self.json_data) < 5:
+            raise ValueError("You need at least 5 entries to start comparing")
 
         entries = random.sample(self.json_data, 3)
 
