@@ -15,7 +15,13 @@ log = logging.getLogger()
 
 class LiTOY:
     @typechecked
-    def __init__(self, input_file: str = None, json_file: str = None, question: str = "most important?", mode: str = "review"):
+    def __init__(
+        self,
+        input_file: str = None,
+        json_file: str = None,
+        question: str = "most important?",
+        mode: str = "review",
+        ):
         log.info("Initializing LiTOY with input_file=%s, json_file=%s, question=%s, mode=%s", input_file, json_file, question, mode)
         if not input_file and not json_file:
             log.error("Either input_file or json_file must be provided")
