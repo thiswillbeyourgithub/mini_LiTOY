@@ -104,6 +104,10 @@ class mini_LiTOY:
                 self.display_comparison_table(entry1, entry2)
                 bindings = KeyBindings()
 
+                self.skip = False
+
+                @bindings.add(' ')
+                @bindings.add('s')
                 @bindings.add('1')
                 @bindings.add('2')
                 @bindings.add('3')
@@ -116,14 +120,18 @@ class mini_LiTOY:
                 @bindings.add('t')
                 def _(event):
                     key = event.key_sequence[0].key
+                    if key == "s" or key == " ":
+                        self.skip = True
                     if key in 'azert':
                         key = str('azert'.index(key) + 1)
                     event.app.exit(result=key)
 
-                answer = prompt(f"{self.question} (1-5 or a-z-e-r-t): ", key_bindings=bindings)
-                log.info("User selected answer: %s", answer)
-                if answer in 'azert':
-                    answer = str('azert'.index(answer) + 1)
+                answer = prompt(f"{self.question} (1-5 or a-z-e-r-t and s or ' ' to skip): ", key_bindings=bindings)
+                log.info(f"User selected answer: '{answer}'")
+                if self.skip:
+                    log.info(f"Skipping this comparison")
+                    continue
+                assert answer.isdigit(), f"Answer should be an int: '{answer}'"
                 answer = int(answer)
 
                 n_comparison_1 = entry1["n_comparison"]
