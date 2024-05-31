@@ -10,6 +10,7 @@ from rich.table import Table
 
 from prompt_toolkit import prompt
 from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.shortcuts import clear
 
 # Configure logging
 logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -96,6 +97,7 @@ class mini_LiTOY:
         counter = 0
         try:
             while True:
+                clear()
                 log.info("Picking two entries for comparison")
                 entry1, entry2 = self.pick_two_entries()
                 log.info("Displaying comparison table for entries %d and %d", entry1["id"], entry2["id"])
