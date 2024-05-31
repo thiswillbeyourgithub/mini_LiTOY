@@ -146,6 +146,8 @@ class mini_LiTOY:
                 entry1["n_comparison"] += 1
                 entry2["n_comparison"] += 1
 
+                assert entry1 in self.json_data and entry2 in self.json_data
+
                 self.store_json_data()
                 log.info("Stored JSON data")
 
@@ -238,11 +240,11 @@ class mini_LiTOY:
         if len(self.json_data) < 5:
             raise ValueError("You need at least 5 entries to start comparing")
 
-        entries = random.sample(self.json_data, 3)
+        entries_nb = random.sample(range(len(self.json_data)), 3)
 
-        entry1 = entries[0]
-        entry2 = entries[1]
-        entry3 = entries[2]
+        entry1 = self.json_data[entries_nb[0]]
+        entry2 = self.json_data[entries_nb[1]]
+        entry3 = self.json_data[entries_nb[2]]
 
         assert entry2 != entry1 and entry3 != entry1
         if entry2["n_comparison"] <= entry3["n_comparison"]:
