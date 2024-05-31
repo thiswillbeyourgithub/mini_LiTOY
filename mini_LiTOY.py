@@ -14,7 +14,7 @@ from prompt_toolkit.key_binding import KeyBindings
 logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 log = logging.getLogger()
 
-class LiTOY:
+class mini_LiTOY:
     VERSION = "0.0.1"
 
     @typechecked
@@ -24,7 +24,7 @@ class LiTOY:
         output_json: str = None,
         question: str = "What's the relative importance of those items to you?'",
         ):
-        log.info(f"Initializing LiTOY with input_file={input_file}, output_json={output_json}, question={question}")
+        log.info(f"Initializing mini_LiTOY with input_file={input_file}, output_json={output_json}, question={question}")
         if not input_file and not output_json:
             log.error("Either input_file or output_json must be provided")
             raise ValueError("Either input_file or output_json must be provided")
@@ -190,4 +190,4 @@ class LiTOY:
             json.dump(self.json_data, file, ensure_ascii=False, indent=4)
 
 if __name__ == "__main__":
-    fire.Fire(LiTOY)
+    fire.Fire(mini_LiTOY)
