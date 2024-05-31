@@ -15,6 +15,8 @@ logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(asctime)s 
 log = logging.getLogger()
 
 class LiTOY:
+    VERSION = "0.0.1"
+
     @typechecked
     def __init__(
         self,
