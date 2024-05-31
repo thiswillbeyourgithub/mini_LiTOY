@@ -21,7 +21,7 @@ class LiTOY:
         json_file: str = None,
         question: str = "most important?",
         ):
-        log.info("Initializing LiTOY with input_file=%s, json_file=%s, question=%s", input_file, json_file, question)
+        log.info(f"Initializing LiTOY with input_file={input_file}, json_file={json_file}, question={question}")
         if not input_file and not json_file:
             log.error("Either input_file or json_file must be provided")
             raise ValueError("Either input_file or json_file must be provided")
