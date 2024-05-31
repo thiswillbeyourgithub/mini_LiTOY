@@ -37,6 +37,7 @@ class mini_LiTOY:
         self.output_json = output_json
         self.question = question
 
+        # load previous data
         self.lines = []
         if output_json and Path(output_json).exists():
             log.info("Loading data from %s", output_json)
