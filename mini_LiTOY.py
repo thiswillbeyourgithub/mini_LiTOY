@@ -61,7 +61,8 @@ class mini_LiTOY:
                             "entry": stripped_line,
                             "n_comparison": 0,
                             "ELO": 1000,  # Sensible default ELO
-                            "id": max_id
+                            "id": max_id,
+                            "metadata": {},
                         }
                         self.json_data.append(entry)
 
@@ -139,6 +140,24 @@ class mini_LiTOY:
         table.add_row("[bold]Nb compar", str(entry1["n_comparison"]), str(entry2["n_comparison"]))
         table.add_row("[bold]ELO", str(entry1["ELO"]), str(entry2["ELO"]))
 
+        metadata_keys = []
+        if entry1["metadata"]:
+            [metadata_keys.append(k) for k in entry1["metadata"].keys()]
+        if entry2["metadata"]:
+            [metadata_keys.append(k) for k in entry2["metadata"].keys()]
+        metadata_keys = sorted(list(set(metadata_keys)))
+        if metadata_keys:
+            table.add_row("[bold]Metadata", "", "")
+        for mk in metadata_keys:
+            if mk in entry1["metadata"]:
+                val1 = entry1["metadata"][mk]
+            else:
+                val1 = ""
+            if mk in entry2["metadata"]:
+                val2 = entry2["metadata"][mk]
+            else:
+                val2 = ""
+            table.add_row(mk.title(), val1, val2)
 
         self.console.print(table)
 
