@@ -164,8 +164,9 @@ class mini_LiTOY:
         if entry1["metadata"]:
             [metadata_keys.append(k) for k in entry1["metadata"].keys()]
         if entry2["metadata"]:
-            [metadata_keys.append(k) for k in entry2["metadata"].keys()]
-        metadata_keys = list(set(metadata_keys))
+            for k in entry2["metadata"]:
+                if k not in metadata_keys:
+                    metadata_keys.append(k)
         if metadata_keys:
             table.add_row("[bold]Metadata", "", "")
         for mk in metadata_keys:
