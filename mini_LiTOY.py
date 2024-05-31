@@ -47,8 +47,25 @@ class mini_LiTOY:
         else:
             self.json_data = []
 
-        max_id = max((item.get("id", 0) for item in self.json_data), default=0)
+        # check validity of data
+        for entry in data:
+            for k in entry.keys():
+                assert k in [
+                    "entry","n_comparison", "ELO", "id", "metadata",
+                ], f"Unexpected key {k} in this entry:\n{entry}"
+            for k in ["entry","n_comparison", "ELO", "id", "metadata"]:
+                assert k in entry.keys(), (
+                    f"Entry missing key {k}:\n{entry}"
+                )
 
+        max_id = max(
+            [
+                int(item["id"])
+                if str(item["id"]).isdigit()
+                else it
+                for it, item in enumerate(self.json_data)
+            ]
+        )
 
         if input_file:
             log.info("Reading input from %s", input_file)
