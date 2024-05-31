@@ -1,3 +1,4 @@
+from typeguard import typechecked
 import fire
 import json
 import os
@@ -13,6 +14,7 @@ logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(asctime)s 
 log = logging.getLogger()
 
 class LiTOY:
+    @typechecked
     def __init__(self, input_file: str = None, json_file: str = None, question: str = "most important?", mode: str = "review"):
         log.info("Initializing LiTOY with input_file=%s, json_file=%s, question=%s, mode=%s", input_file, json_file, question, mode)
         if not input_file and not json_file:
@@ -65,6 +67,7 @@ class LiTOY:
             log.error("Invalid mode: %s", self.mode)
             raise ValueError("Invalid mode. Use 'review' or 'export'.")
 
+    @typechecked
     def run_comparison_loop(self) -> None:
         counter = 0
         try:
@@ -113,6 +116,7 @@ class LiTOY:
             log.info("Exiting due to keyboard interrupt")
             raise SystemExit("\nExiting. Goodbye!")
 
+    @typechecked
     def display_comparison_table(self, entry1: dict, entry2: dict) -> None:
         import os
         terminal_width = os.get_terminal_size().columns
@@ -128,6 +132,7 @@ class LiTOY:
 
         self.console.print(table)
 
+    @typechecked
     def update_elo(self, answer: int, elo1: int, elo2: int, k: int) -> tuple[int, int]:
         """
         Update ELO scores based on the answer.
@@ -151,6 +156,7 @@ class LiTOY:
 
         return round(new_elo1), round(new_elo2)
 
+    @typechecked
     def pick_two_entries(self) -> tuple[dict, dict]:
         """
         Pick three entries at random, then return the first of the three and the one with the highest K among the other two.
@@ -172,6 +178,8 @@ class LiTOY:
             entry2 = entry3
 
         return entry1, entry2
+
+    @typechecked
     def store_json_data(self) -> None:
         if not hasattr(self, 'json_file') or not self.json_file:
             raise AttributeError("Missing attribute: 'json_file'")
@@ -181,6 +189,7 @@ class LiTOY:
         with open(self.json_file, 'w', encoding='utf-8') as file:
             json.dump(self.json_data, file, ensure_ascii=False, indent=4)
 
+    @typechecked
     def export_to_markdown(self) -> None:
         sorted_entries = sorted(self.json_data, key=lambda x: x["ELO"], reverse=True)
         markdown_lines = [f"- {entry['entry']}" for entry in sorted_entries]
