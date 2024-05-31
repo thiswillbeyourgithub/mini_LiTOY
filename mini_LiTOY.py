@@ -107,7 +107,7 @@ class mini_LiTOY:
                 n_comparison_2 = entry2["n_comparison"]
                 K2 = self.inertia_values[n_comparison_2] if n_comparison_2 <= len(self.inertia_values) else self.inertia_values[-1]
 
-                new_elo1, new_elo2 = self.update_elo(answer, entry1["ELO"], entry2["ELO"], K1)
+                new_elo1, new_elo2 = self.update_elo(answer, entry1["ELO"], entry2["ELO"], K1, K2)
                 entry1["ELO"], entry2["ELO"] = new_elo1, new_elo2
                 log.info("Updated ELOs: entry1=%d, entry2=%d", new_elo1, new_elo2)
 
@@ -138,13 +138,16 @@ class mini_LiTOY:
         self.console.print(table)
 
     @typechecked
-    def update_elo(self, answer: int, elo1: int, elo2: int, k: int) -> tuple[int, int]:
+    def update_elo(self, answer: int, elo1: int, elo2: int, k1: int, k2: int) -> tuple[int, int]:
         """
         Update ELO scores based on the answer.
         
         :param answer: int, number of wins for the first player (1-5)
         :param elo1: int, ELO score of the first player
         :param elo2: int, ELO score of the second player
+        :param k1: int, K value of the first player
+        :param k2: int, K value of the second player
+
         :return: tuple, updated ELO scores (new_elo1, new_elo2)
         """
         if not (1 <= answer <= 5):
@@ -156,8 +159,8 @@ class mini_LiTOY:
         actual_score1 = answer / 5
         actual_score2 = 1 - actual_score1
 
-        new_elo1 = elo1 + k * (actual_score1 - expected_score1)
-        new_elo2 = elo2 + k * (actual_score2 - expected_score2)
+        new_elo1 = elo1 + k1 * (actual_score1 - expected_score1)
+        new_elo2 = elo2 + k2 * (actual_score2 - expected_score2)
 
         return round(new_elo1), round(new_elo2)
 
