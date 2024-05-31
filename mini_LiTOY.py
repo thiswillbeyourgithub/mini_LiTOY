@@ -82,7 +82,7 @@ class mini_LiTOY:
                         entry = {
                             "entry": line,
                             "n_comparison": 0,
-                            "ELO": 1000,  # Sensible default ELO
+                            "ELO": 100,  # Sensible default ELO
                             "id": max_id,
                             "metadata": {},
                         }
