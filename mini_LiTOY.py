@@ -175,10 +175,16 @@ class mini_LiTOY:
                 val1 = entry1["metadata"][mk]
             else:
                 val1 = ""
+            if isinstance(val1, dict):
+                val1 = json.dumps(val1)
             if mk in entry2["metadata"]:
                 val2 = entry2["metadata"][mk]
             else:
                 val2 = ""
+            if isinstance(val2, dict):
+                val2 = json.dumps(val2)
+            val1 = str(val1)
+            val2 = str(val2)
             table.add_row(mk.title(), val1, val2)
 
         self.console.print(table)
