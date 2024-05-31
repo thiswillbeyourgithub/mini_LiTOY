@@ -20,9 +20,8 @@ class LiTOY:
         input_file: str = None,
         json_file: str = None,
         question: str = "most important?",
-        mode: str = "review",
         ):
-        log.info("Initializing LiTOY with input_file=%s, json_file=%s, question=%s, mode=%s", input_file, json_file, question, mode)
+        log.info("Initializing LiTOY with input_file=%s, json_file=%s, question=%s", input_file, json_file, question)
         if not input_file and not json_file:
             log.error("Either input_file or json_file must be provided")
             raise ValueError("Either input_file or json_file must be provided")
@@ -33,7 +32,6 @@ class LiTOY:
 
         self.json_file = json_file
         self.question = question
-        self.mode = mode
         self.lines = []
         if json_file and os.path.exists(json_file):
             log.info("Loading data from %s", json_file)
@@ -63,15 +61,8 @@ class LiTOY:
                         self.json_data.append(entry)
 
         self.console = Console()
-        if self.mode == "review":
-            log.info("Starting comparison loop")
-            self.run_comparison_loop()
-        elif self.mode == "export":
-            log.info("Exporting to markdown")
-            self.export_to_markdown()
-        else:
-            log.error("Invalid mode: %s", self.mode)
-            raise ValueError("Invalid mode. Use 'review' or 'export'.")
+        log.info("Starting comparison loop")
+        self.run_comparison_loop()
 
     @typechecked
     def run_comparison_loop(self) -> None:
@@ -194,26 +185,6 @@ class LiTOY:
 
         with open(self.json_file, 'w', encoding='utf-8') as file:
             json.dump(self.json_data, file, ensure_ascii=False, indent=4)
-
-    @typechecked
-    def export_to_markdown(self) -> None:
-        sorted_entries = sorted(self.json_data, key=lambda x: x["ELO"], reverse=True)
-        markdown_lines = [f"- {entry['entry']}" for entry in sorted_entries]
-
-        markdown_file = self.json_file.replace('.json', '.md')
-        log.info("Exporting to markdown file: %s", markdown_file)
-        if os.path.exists(markdown_file):
-            confirm = input(f"{markdown_file} already exists. Do you want to overwrite it? (y/n): ")
-            if confirm.lower() != 'y':
-                log.info("Export cancelled by user")
-                print("Export cancelled.")
-                return
-
-        with open(markdown_file, 'w', encoding='utf-8') as file:
-            file.write("\n".join(markdown_lines))
-
-        log.info("Exported to %s", markdown_file)
-        print(f"Exported to {markdown_file}")
 
 if __name__ == "__main__":
     fire.Fire(LiTOY)
