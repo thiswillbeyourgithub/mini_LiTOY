@@ -28,6 +28,15 @@ class mini_LiTOY:
         question: str = "What's the relative importance of those items to you?'",
         callback: Optional[Callable] = None,
         ):
+        """
+        Parameters
+        ----------
+
+        :param input_file: Path a txt file, parsed as one entry per line, ignoring empty lines and those starting with #
+        :param output_json: Path the json file that will be updated as ELOs get updated
+        :param question: Question to ask to the user
+        :param callback: Callable, will be called just after updating the json file. This is intended for use when imported. See examples folder
+        """
         log.info(f"Initializing mini_LiTOY with input_file={input_file}, output_json={output_json}, question={question}")
         if not input_file and not output_json:
             log.error("Either input_file or output_json must be provided")
