@@ -1,3 +1,4 @@
+from typing import Optional
 from typeguard import typechecked
 import os
 import fire
@@ -21,8 +22,8 @@ class mini_LiTOY:
     @typechecked
     def __init__(
         self,
-        input_file: str = None,
-        output_json: str = None,
+        input_file: Optional[str] = None,
+        output_json: Optional[str] = None,
         question: str = "What's the relative importance of those items to you?'",
         ):
         log.info(f"Initializing mini_LiTOY with input_file={input_file}, output_json={output_json}, question={question}")
