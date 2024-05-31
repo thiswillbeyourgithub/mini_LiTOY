@@ -125,15 +125,20 @@ class mini_LiTOY:
     @typechecked
     def display_comparison_table(self, entry1: dict, entry2: dict) -> None:
         terminal_width = os.get_terminal_size().columns
+
         table = Table(title="Comparison", width=terminal_width)
 
-        table.add_column("ID", justify="center", style="cyan", no_wrap=True)
-        table.add_column("Entry", justify="left", style="magenta")
-        table.add_column("Nb compar", justify="center", style="green")
-        table.add_column("ELO", justify="center", style="red")
+        table.add_column("Entries", justify="center", no_wrap=True, width=terminal_width//5)
+        table.add_column(str(entry1['id']), justify="center", width = terminal_width//5*2)
+        table.add_column(str(entry2['id']), justify="center", width = terminal_width//5*2)
 
-        table.add_row(str(entry1["id"]), entry1["entry"], str(entry1["n_comparison"]), str(entry1["ELO"]))
-        table.add_row(str(entry2["id"]), entry2["entry"], str(entry2["n_comparison"]), str(entry2["ELO"]))
+
+        table.add_row("[bold]Content", "[bold]" + str(entry1["entry"]), "[bold]" + str(entry2["entry"]))
+        table.add_row("", "", "")
+        table.add_row("", "", "")
+        table.add_row("[bold]Nb compar", str(entry1["n_comparison"]), str(entry2["n_comparison"]))
+        table.add_row("[bold]ELO", str(entry1["ELO"]), str(entry2["ELO"]))
+
 
         self.console.print(table)
 
