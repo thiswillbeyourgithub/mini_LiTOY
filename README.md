@@ -11,3 +11,5 @@ mini_LiTOY's idea is to keep the code idea but this time in a minimalistic pytho
 * `python -m pip install -r requirements.txt`
 * `python mini_LiTOY.py --input_file my_text_file.txt --output_json output_file.json --question 'What's the relative importance of those items to you?'`
 Each new (nonempty nor commented) line in input_file will be added to the input_file.json with the default values. Each answer from the user will update the json file.
+
+To sort the elements by ELO score: `cat output_file.json | jq 'sort_by(.ELO)'`
