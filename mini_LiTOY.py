@@ -19,7 +19,7 @@ class LiTOY:
         self,
         input_file: str = None,
         json_file: str = None,
-        question: str = "most important?",
+        question: str = "What's the relative importance of those items to you?'",
         ):
         log.info(f"Initializing LiTOY with input_file={input_file}, json_file={json_file}, question={question}")
         if not input_file and not json_file:
