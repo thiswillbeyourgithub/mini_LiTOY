@@ -6,9 +6,19 @@ from typeguard import typechecked
 import fire
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
+import logging
 
 from tqdm import tqdm
 from omnivoreql import OmnivoreQL
+
+# Configure logging
+logging.basicConfig(filename='omnivore_log.txt', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+log = logging.getLogger()
+
+import sys
+sys.path.insert(0, "..")
+from mini_LiTOY import mini_LiTOY
+sys.path.pop(0)
 
 @typechecked
 def generate_dates(dateA: str, dateB: str, days_diff: int) -> List:
@@ -44,13 +54,14 @@ metadata_keys = [
 ]
 
 @typechecked
-def main(
+def update_js(
     json_file_to_update: Union[str, PosixPath],
     omnivore_api_key: str,
     start_date: str = "2023-04-01",
     base_query: str = "in:inbox -type:highlights sort:saved saved:$start_date..$end_date",
     time_window: int = 7,
     ):
+    log.info("Starting omnivore update")
     try:
         client = OmnivoreQL(omnivore_api_key)
         labels = client.get_labels()["labels"]["labels"]
@@ -139,7 +150,41 @@ def main(
             ensure_ascii=False,
             indent=2,
         )
+    tqdm.write("Done updating {json_file_to_update}!")
+
+@typechecked
+def review(
+    json_file_to_update: Union[str, PosixPath],
+    omnivore_api_key: str,
+    ):
+    log.info("Starting omnivore review")
+    try:
+        client = OmnivoreQL(omnivore_api_key)
+        labels = client.get_labels()["labels"]["labels"]
+    except Exception as err:
+        raise Exception(f"Error when logging to OmnivoreQL then loading labels: '{err}'")
+
+    json_file_to_update =  Path(json_file_to_update)
+    assert json_file_to_update.exists()
+    try:
+        json_articles = json.load(Path(json_file_to_update).open("r"))
+    except Exception as err:
+        raise Exception(f"Error when loading {json_file_to_update}: '{err}'")
+    assert isinstance(json_articles, list), f"loaded json is not a list"
+    assert all(isinstance(article, dict) for article in json_articles), f"loaded json is not a list of dict"
+
+    @typechecked
+    def update_labels(instance: mini_LiTOY, entry1: dict, entry2: dict) -> None:
+        # TODO: add ELO label
+        breakpoint()
+
+    log.info("Starting mini LiTOY")
+    mini_litoy = mini_LiTOY(
+        output_json=json_file_to_update,
+        callback=update_labels,
+    )
+
 
 if __name__== "__main__":
-    fire.Fire(main)
+    fire.Fire()
 
