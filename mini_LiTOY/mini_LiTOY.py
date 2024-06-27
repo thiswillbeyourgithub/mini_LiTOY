@@ -99,20 +99,21 @@ class mini_LiTOY:
         if input_file:
             self.p(f"Reading input from {input_file if input_file is not sys.stdin else 'stdin'}")
             with open(input_file, 'r') as file:
-                for line in file:
-                    line = line.stripped()
-                    if (not line) or line.startswith("#"):
-                        continue
-                    if not any(entry["entry"] == line for entry in self.json_data):
-                        max_id += 1
-                        entry = {
-                            "entry": line,
-                            "n_comparison": 0,
-                            "ELO": 100,  # Sensible default ELO
-                            "id": max_id,
-                            "metadata": {},
-                        }
-                        self.json_data.append(entry)
+                input_content = file.read()
+            for line in input_content.splitlines():
+                line = line.stripped()
+                if (not line) or line.startswith("#"):
+                    continue
+                if not any(entry["entry"] == line for entry in self.json_data):
+                    max_id += 1
+                    entry = {
+                        "entry": line,
+                        "n_comparison": 0,
+                        "ELO": 100,  # Sensible default ELO
+                        "id": max_id,
+                        "metadata": {},
+                    }
+                    self.json_data.append(entry)
 
         self.console = Console()
         self.p("Starting comparison loop")
