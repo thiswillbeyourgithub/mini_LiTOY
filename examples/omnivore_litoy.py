@@ -26,7 +26,7 @@ MAX_CONCURRENCY = 10
 
 @typechecked
 def _load_api_key() -> str:
-    if "OMNIVORE_API_KEY" not in os.environment:
+    if "OMNIVORE_API_KEY" not in os.environ:
         raise Exception("No OMNIVORE_API_KEY found in environment, and not given as arugment")
     elif not os.environ["OMNIVORE_API_KEY"]:
         raise Exception("Empty OMNIVORE_API_KEY found in environment")
