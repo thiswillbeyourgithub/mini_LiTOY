@@ -34,6 +34,7 @@ setup(
         "typeguard >= 0.4.3",
         "rich>=13.7.1",
         "prompt-toolkit>=3.0.40",
+        "platformdirs >= 4.2.2",
     ],
 
 )

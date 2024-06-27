@@ -1,3 +1,4 @@
+from platformdirs import user_log_dir, user_config_dir
 from typing import Optional, Callable, Union
 from typeguard import typechecked
 import os
@@ -5,18 +6,13 @@ import fire
 import json
 from pathlib import Path, PosixPath
 import logging
+from rich.markdown import Markdown
 from rich.console import Console
 from rich.table import Table
 
 from prompt_toolkit import prompt
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.shortcuts import clear
-
-
-
-# Configure logging
-logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-log = logging.getLogger()
 
 
 class mini_LiTOY:
@@ -281,6 +277,44 @@ class mini_LiTOY:
 
         with open(self.output_json, 'w', encoding='utf-8') as file:
             json.dump(self.json_data, file, ensure_ascii=False, indent=4)
+
+console = Console()
+
+@typechecked
+def erro(message: str) -> str:
+    "print error message"
+    md = Markdown(message)
+    console.print(md, style="red")
+    return message
+
+
+# figure out logging dir
+try:
+    log_dir = user_log_dir(
+        appname="mini_LiTOY",
+        version=mini_LiTOY.VERSION,
+    )
+    assert Path(log_dir).exists() and Path(log_dir).is_dir()
+except Exception as err:
+    try:
+        log_dir = user_config_dir(
+            appname="mini_LiTOY",
+            version=mini_LiTOY.VERSION,
+        )
+        assert Path(log_dir).exists() and Path(log_dir).is_dir()
+    except Exception as err2:
+        raise Exception(erro(f"# Errors when trying to find an appropriate log dir:\n- '{err}'\n- '{err2}'"))
+
+log_dir = Path(log_dir)
+assert Path(log_dir).exists() and Path(log_dir).is_dir()
+log_file = str((log_dir / "mini_litoy.logs.txt").resolve().absolute())
+
+# Configure logging
+logging.basicConfig(filename=log_file, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+log = logging.getLogger()
+
+print(f"Logfile: {log_file}")
+
 
 if __name__ == "__main__":
     fire.Fire(mini_LiTOY)
