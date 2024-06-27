@@ -35,7 +35,7 @@ def _load_api_key() -> str:
 
 default_dict = {
         "n_comparison": 0,
-        "ELO": 100,
+        "ELO": mini_LiTOY.ELO_default,
         "metadata": {},
 }
 metadata_keys = [
