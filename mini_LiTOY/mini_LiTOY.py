@@ -36,7 +36,7 @@ class LockedDict(dict):
 
 
 class mini_LiTOY:
-    VERSION: str = "0.1.1"
+    VERSION: str = "0.1.2"
     inertia_values = [30, 25, 20, 15, 10]
     questions = ["What's the relative importance of those items to you?'"]
     ELO_norm = 40
