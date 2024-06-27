@@ -102,6 +102,7 @@ class mini_LiTOY:
                 assert q in self.questions, f"Entry #{ie} contains a question that is not part of self.questions: '{q}'"
                 if not isinstance(d, self.LockedDict):
                     entry["all_ELO"][q] = self.LockedDict(d)
+                    d = self.LockedDict(d)
                 assert isinstance(d, self.LockedDict)
                 assert isinstance(q, str), f"questions in entry #{ie} entry['all_ELO'] must be strings not {type(q)} '({q})'"
                 assert all(dd in ["q_n_comparison", "qELO"] for dd in  d.keys()), f"Invalid entry['all_ELO']: {q}:{d} in entry #{ie}"
