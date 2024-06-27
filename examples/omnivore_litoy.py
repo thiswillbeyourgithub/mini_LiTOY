@@ -202,9 +202,9 @@ def update_js(
         if ids.count(i) > 1:
             dup_i.add(i)
     if dup_i:
-        print(f"Found {len(dup_i)} entries whose 'id' value is identical:")
+        log.info(f"Found {len(dup_i)} entries whose 'id' value is identical:")
         for i in dup_i:
-            print(f"- {i}")
+            log.info(f"- {i}")
         raise Exception()
 
     texts = [ent["entry"] for ent in json_articles]
@@ -215,13 +215,13 @@ def update_js(
             dup_t.add(t)
             dup_ind.append(ind)
     if dup_t:
-        print(f"Found {len(dup_t)} entries whose 'entry' text is identical:")
+        log.info(f"Found {len(dup_t)} entries whose 'entry' text is identical:")
         for t in dup_t:
-            print(f"- {t}")
+            log.info(f"- {t}")
 
         # create label if missing
         if DUPLICATE_LABEL not in [lab["name"] for lab in labels]:
-            print(f'Creating label "{DUPLICATE_LABEL}"')
+            log.info(f'Creating label "{DUPLICATE_LABEL}"')
             client.create_label(
                 CreateLabelInput(
                     DUPLICATE_LABEL,
@@ -235,7 +235,7 @@ def update_js(
 
         for ind in dup_ind:
             page_id=json_articles[ind]["id"]
-            print(f"Adding duplicate label to article with id '{page_id}'")
+            log.info(f"Adding duplicate label to article with id '{page_id}'")
             client.set_page_labels_by_ids(
                 page_id=json_articles[ind]["id"],
                 label_ids=dup_lab_id,
@@ -247,7 +247,7 @@ def update_js(
         ensure_ascii=False,
         indent=2,
     )
-    print(f"Done updating {json_file_to_update}!")
+    log.info(f"Done updating {json_file_to_update}!")
 
 @typechecked
 def review(
