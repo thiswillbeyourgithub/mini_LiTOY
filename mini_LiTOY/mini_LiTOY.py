@@ -19,12 +19,24 @@ from prompt_toolkit.keys import Keys
 from prompt_toolkit.shortcuts import clear
 
 
+class LockedDict(dict):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._locked = True
+
+    def __setitem__(self, key, value):
+        if self._locked and key not in self:
+            raise KeyError(f"Cannot create new key '{key}'. Only existing keys can be modified.")
+        super().__setitem__(key, value)
+
+
 class mini_LiTOY:
     VERSION: str = "0.1.1"
     inertia_values = [30, 25, 20, 15, 10]
     questions = ["What's the relative importance of those items to you?'"]
     ELO_norm = 40
     ELO_default = 100
+    LockedDict = LockedDict
 
     @typechecked
     def __init__(
@@ -67,7 +79,7 @@ class mini_LiTOY:
             with open(self.output_json, 'r') as file:
                 data = json.load(file)
                 assert isinstance(data, list) and all(isinstance(item, dict) for item in data), "JSON file must be a list of dictionaries"
-            self.json_data = [LockedDict(di) for di in data]
+            self.json_data = [self.LockedDict(di) for di in data]
         else:
             self.json_data = []
 
@@ -83,8 +95,8 @@ class mini_LiTOY:
                 )
             for q, d in entry["all_ELO"]:
                 assert isinstance(d, dict)
-                entry["all_ELO"][q] = LockedDict(d)
-                assert isinstance(d, LockedDict)
+                entry["all_ELO"][q] = self.LockedDict(d)
+                assert isinstance(d, self.LockedDict)
                 assert isinstance(q, str), f"questions in entry['all_ELO'] must be strings not {type(q)} '({q})'"
                 assert all(dd in ["q_n_comparison", "qELO"] for dd in  d.keys()), f"Invalid entry['all_ELO']: {q}:{d}"
                 assert all(k in d.keys() for k in ["q_n_comparison", "qELO"]), f"Invalid entry['all_ELO']: {q}:{d}"
@@ -116,12 +128,12 @@ class mini_LiTOY:
                     continue
                 if not any(entry["entry"] == line for entry in self.json_data):
                     max_id += 1
-                    entry = LockedDict({
+                    entry = self.LockedDict({
                         "entry": line,
                         "g_n_comparison": 0,
                         "g_ELO": self.ELO_default,
                         "all_ELO": {
-                            q: LockedDict({
+                            q: self.LockedDict({
                                 "q_n_comparison": 0,
                                 "q_ELO": self.ELO_default
                             } for q in self.questions
@@ -400,16 +412,6 @@ par = cache_dir.parent.parent
 assert par.exists() and par.is_dir()
 recovery_dir = cache_dir / "recovery"
 recovery_dir.mkdir(parents=True, exist_ok=True)
-
-class LockedDict(dict):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._locked = True
-
-    def __setitem__(self, key, value):
-        if self._locked and key not in self:
-            raise KeyError(f"Cannot create new key '{key}'. Only existing keys can be modified.")
-        super().__setitem__(key, value)
 
 
 if __name__ == "__main__":
