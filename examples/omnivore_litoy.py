@@ -13,7 +13,7 @@ import random
 import os
 
 from tqdm import tqdm
-from omnivoreql import OmnivoreQL
+from omnivoreql import OmnivoreQL, CreateLabelInput
 from mini_LiTOY import mini_LiTOY
 
 # Configure logging
@@ -23,6 +23,7 @@ log = logging.getLogger()
 
 MAX_REQUEST_TRIALS = 5
 MAX_CONCURRENCY = 10
+DUPLICATE_LABEL = "litoy_duplicates"
 
 @typechecked
 def _load_api_key() -> str:
@@ -89,7 +90,7 @@ def update_js(
     json_file_to_update: Union[str, PosixPath],
     omnivore_api_key: Optional[str] = None,
     start_date: Union[str, datetime] = "2023-04-01",
-    base_query: str = "in:inbox -type:highlights sort:saved saved:$start_date..$end_date",
+    base_query: str = "in:inbox -type:highlights sort:saved saved:$start_date..$end_date -label:" + DUPLICATE_LABEL,
     time_window: int = 7,
     ):
     if omnivore_api_key is None:
@@ -195,26 +196,51 @@ def update_js(
             n_new += 1
 
     # check no entries have the same name or id
-    texts = [ent["entry"] for ent in json_articles]
     ids = [ent["id"] for ent in json_articles]
-    dup_t = set()
     dup_i = set()
-    for t in texts:
-        if texts.count(t) > 1:
-            dup_t.add(t)
     for i in ids:
         if ids.count(i) > 1:
             dup_i.add(i)
-    if dup_t:
-        print(f"Found {len(dup_t)} entries whose 'entry' text is identical:")
-        for t in dup_t:
-            print(f"- {t}")
     if dup_i:
         print(f"Found {len(dup_i)} entries whose 'id' value is identical:")
         for i in dup_i:
             print(f"- {i}")
-    if dup_t or dup_i:
         raise Exception()
+
+    texts = [ent["entry"] for ent in json_articles]
+    dup_t = set()
+    dup_ind = []
+    for ind, t in enumerate(texts):
+        if texts.count(t) > 1:
+            dup_t.add(t)
+            dup_ind.append(ind)
+    if dup_t:
+        print(f"Found {len(dup_t)} entries whose 'entry' text is identical:")
+        for t in dup_t:
+            print(f"- {t}")
+
+        # create label if missing
+        if DUPLICATE_LABEL not in [lab["name"] for lab in labels]:
+            print(f'Creating label "{DUPLICATE_LABEL}"')
+            client.create_label(
+                CreateLabelInput(
+                    DUPLICATE_LABEL,
+                    "#ff0000",  # red
+                    "Label created by mini_litoy/examples/omnivore_litoy.py"
+                )
+            )
+            labels = client.get_labels()["labels"]["labels"]
+        assert DUPLICATE_LABEL in [lab["name"] for lab in labels], f"Failed to create label {DUPLICATE_LABEL}"
+        dup_lab_id = [lab["id"] for lab in labels if lab["name"] == DUPLICATE_LABEL][0]
+
+        for ind in dup_ind:
+            page_id=json_articles[ind]["id"]
+            print(f"Adding duplicate label to article with id '{page_id}'")
+            client.set_page_labels_by_ids(
+                page_id=json_articles[ind]["id"],
+                label_ids=dup_lab_id,
+            )
+
 
     json.dump(
         json_articles,
