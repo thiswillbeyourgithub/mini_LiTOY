@@ -322,7 +322,12 @@ def review(
                 lab["id"] for lab in all_labels[0]
                 if lab["name"] in entr["metadata"]["labels"] and not lab["name"].startswith("litoy_")
             ]
-            new_lab_id = [lab["id"] for lab in all_labels[0]]
+            new_lab_id = [
+                lab["id"]
+                for lab in all_labels[0]
+                if lab["name"] == new_lab
+            ]
+            assert len(new_lab_id) == 1
             log.info(f"Entry with id {entr['id']}: setting labels to {new_lab_id + old_lab_ids}")
             client.set_page_labels_by_ids(
                 page_id=entr["id"],
