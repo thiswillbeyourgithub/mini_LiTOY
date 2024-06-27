@@ -23,6 +23,7 @@ class mini_LiTOY:
     VERSION: str = "0.1.1"
     inertia_values = [30, 25, 20, 15, 10]
     question = "What's the relative importance of those items to you?'"
+    ELO_norm = 400
 
     @typechecked
     def __init__(
@@ -251,7 +252,7 @@ class mini_LiTOY:
         if not (1 <= answer <= 5):
             raise ValueError("Answer must be a digit between 1 and 5")
 
-        expected_score1 = 1 / (1 + 10 ** ((elo2 - elo1) / 400))
+        expected_score1 = 1 / (1 + 10 ** ((elo2 - elo1) / self.ELO_norm))
         expected_score2 = 1 - expected_score1
 
         actual_score1 = answer / 5
