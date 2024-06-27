@@ -244,8 +244,8 @@ class mini_LiTOY:
                 entry1["all_ELO"][q]["q_n_comparison"] += 1
                 entry2["all_ELO"][q]["q_n_comparison"] += 1
 
-                entry1["g_ELO"] = sum([entry1["all_ELO"][_q]["q_ELO"] for _q in entry1["all_ELO"].keys()])
-                entry2["g_ELO"] = sum([entry2["all_ELO"][_q]["q_ELO"] for _q in entry2["all_ELO"].keys()])
+                entry1["g_ELO"] = int(sum([entry1["all_ELO"][_q]["q_ELO"] for _q in entry1["all_ELO"].keys()]) / len(self.questions))
+                entry2["g_ELO"] = int(sum([entry2["all_ELO"][_q]["q_ELO"] for _q in entry2["all_ELO"].keys()]) / len(self.questions))
                 entry1["g_n_comparison"] = sum([entry1["all_ELO"][_q]["q_n_comparison"] for _q in entry1["all_ELO"].keys()])
                 entry2["g_n_comparison"] = sum([entry2["all_ELO"][_q]["q_n_comparison"] for _q in entry2["all_ELO"].keys()])
 
