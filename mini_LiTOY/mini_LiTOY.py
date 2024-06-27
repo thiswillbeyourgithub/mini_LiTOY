@@ -206,7 +206,7 @@ class mini_LiTOY:
                     json.dump(self.json_data, file, ensure_ascii=False, indent=4)
                 with sys.stdout as file:
                     json.dump(self.json_data, file, ensure_ascii=False, indent=4)
-                # sys.stdout.flush()
+                sys.stdout.flush()
                 raise SystemExit()
             else:
                 raise SystemExit("\nExiting. Goodbye!")
