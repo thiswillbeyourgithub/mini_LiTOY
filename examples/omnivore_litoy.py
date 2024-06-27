@@ -16,7 +16,7 @@ from tqdm import tqdm
 from omnivoreql import OmnivoreQL
 
 # Configure logging
-logging.basicConfig(filename='omnivore_log.txt', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename='omnivore_logs.txt', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 log = logging.getLogger()
 
 from mini_LiTOY import mini_LiTOY
