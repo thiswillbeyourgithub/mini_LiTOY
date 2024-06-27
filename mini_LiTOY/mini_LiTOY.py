@@ -84,27 +84,32 @@ class mini_LiTOY:
             self.json_data = []
 
         # check validity of data
-        for entry in self.json_data:
+        for ie, entry in enumerate(self.json_data):
             for k in entry.keys():
                 assert k in [
                     "entry","g_n_comparison", "g_ELO", "all_ELO", "id", "metadata",
-                ], f"Unexpected key {k} in this entry:\n{entry}"
+                ], f"Unexpected key {k} in entry #{ie}"
             for k in ["entry","g_n_comparison", "g_ELO", "all_ELO", "id", "metadata"]:
                 assert k in entry.keys(), (
-                    f"Entry missing key {k}:\n{entry}"
+                    f"Entry #{ie} missing key {k}:\n{entry}"
                 )
+            for q in self.questions:
+                if q not in entry["all_ELO"]:
+                    entry["all_ELO"][q] = LockedDict({"q_n_comparison": 0, "q_ELO": self.ELO_default})
+
             for q, d in entry["all_ELO"]:
                 assert isinstance(d, dict)
-                entry["all_ELO"][q] = self.LockedDict(d)
+                assert q in self.questions, f"Entry #{ie} contains a question that is not part of self.questions: '{q}'"
+                if not isinstance(d, self.LockedDict):
+                    entry["all_ELO"][q] = self.LockedDict(d)
                 assert isinstance(d, self.LockedDict)
-                assert isinstance(q, str), f"questions in entry['all_ELO'] must be strings not {type(q)} '({q})'"
-                assert all(dd in ["q_n_comparison", "qELO"] for dd in  d.keys()), f"Invalid entry['all_ELO']: {q}:{d}"
-                assert all(k in d.keys() for k in ["q_n_comparison", "qELO"]), f"Invalid entry['all_ELO']: {q}:{d}"
+                assert isinstance(q, str), f"questions in entry #{ie} entry['all_ELO'] must be strings not {type(q)} '({q})'"
+                assert all(dd in ["q_n_comparison", "qELO"] for dd in  d.keys()), f"Invalid entry['all_ELO']: {q}:{d} in entry #{ie}"
+                assert all(k in d.keys() for k in ["q_n_comparison", "qELO"]), f"Invalid entry['all_ELO']: {q}:{d} in entry #{ie}"
 
+            # all question of the dict must be part of self.questions, but the dict can have fewer, in that case they will be created here
             for q in entry["all_ELO"].keys():
-                assert q in self.questions, f"Entry contains a question that is not part of self.questions: '{q}'"
-            for q in self.questions:
-                assert q in entry["all_ELO"].keys(), f"A question from self.questions is not part of all_ELO keys: '{q}'"
+                assert q in self.questions, f"Entry #{ie} contains a question that is not part of self.questions: '{q}'"
 
         if self.json_data:
             max_id = max(
