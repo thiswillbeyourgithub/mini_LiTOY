@@ -74,7 +74,7 @@ class mini_LiTOY:
             self.json_data = []
 
         # check validity of data
-        for entry in data:
+        for entry in self.json_data:
             for k in entry.keys():
                 assert k in [
                     "entry","n_comparison", "ELO", "id", "metadata",
