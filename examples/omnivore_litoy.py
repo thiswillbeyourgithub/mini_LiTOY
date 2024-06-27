@@ -1,3 +1,4 @@
+import copy
 import time
 from pathlib import Path, PosixPath
 import json
@@ -34,18 +35,7 @@ def _load_api_key() -> str:
     omnivore_api_key = os.environ["OMNIVORE_API_KEY"]
     return omnivore_api_key
 
-default_dict = mini_LiTOY.LockedDict({
-    "entry": None,
-    "id": None,
-    "metadata": {},
-
-    "g_n_comparison": 0,
-    "g_ELO": mini_LiTOY.ELO_default,
-    "all_ELO": {
-        q: mini_LiTOY.LockedDict({"q_ELO": mini_LiTOY.ELO_default, "q_n_comparison": 0})
-        for q in mini_LiTOY.questions
-    },
-})
+default_dict = copy.deepcopy(mini_LiTOY.default_dict)
 metadata_keys = [
     "description",
     "siteName",

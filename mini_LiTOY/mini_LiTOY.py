@@ -1,3 +1,4 @@
+import copy
 import sys
 import os
 import logging
@@ -29,6 +30,11 @@ class LockedDict(dict):
             raise KeyError(f"Cannot create new key '{key}'. Only existing keys can be modified.")
         super().__setitem__(key, value)
 
+    def __deepcopy__(self, memo):
+        new_instance = LockedDict(self)
+        assert id(new_instance) != id(self)
+        return new_instance
+
 
 class mini_LiTOY:
     VERSION: str = "0.1.1"
@@ -36,7 +42,26 @@ class mini_LiTOY:
     questions = ["What's the relative importance of those items to you?'"]
     ELO_norm = 40
     ELO_default = 100
+
     LockedDict = LockedDict
+    default_subdict = dict(
+        {
+        "q_n_comparison": 0,
+        "q_ELO": ELO_default,
+        }
+    )
+    default_dict = LockedDict(
+        {
+        "entry": None,
+        "g_n_comparison": 0,
+        "g_ELO": ELO_default,
+        "all_ELO": {},
+        "id": None,
+        "metadata": {},
+        }
+    )
+    for q in questions:
+        default_dict["all_ELO"][q] = copy.deepcopy(default_subdict)
 
     @typechecked
     def __init__(
@@ -156,19 +181,9 @@ class mini_LiTOY:
                     continue
                 if not any(entry["entry"] == line for entry in self.json_data):
                     max_id += 1
-                    entry = self.LockedDict({
-                        "entry": line,
-                        "g_n_comparison": 0,
-                        "g_ELO": self.ELO_default,
-                        "all_ELO": {
-                            q: self.LockedDict({
-                                "q_n_comparison": 0,
-                                "q_ELO": self.ELO_default
-                            }) for q in self.questions
-                        },
-                        "id": max_id,
-                        "metadata": {},
-                    })
+                    entry = copy(self.default_dict)
+                    entry["entry"] = line
+                    entry["id"] = max_id
                     self.json_data.append(entry)
 
         self.console = Console()
