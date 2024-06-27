@@ -1,3 +1,4 @@
+import sys
 from platformdirs import user_log_dir, user_config_dir
 from typing import Optional, Callable, Union
 from typeguard import typechecked
@@ -31,8 +32,8 @@ class mini_LiTOY:
         Parameters
         ----------
 
-        :param input_file: Path a txt file, parsed as one entry per line, ignoring empty lines and those starting with #
-        :param output_json: Path the json file that will be updated as ELOs get updated
+        :param input_file: Path a txt file, parsed as one entry per line, ignoring empty lines and those starting with #. If "stdin", will read from stdin
+        :param output_json: Path the json file that will be updated as ELOs get updated. If "stdout", will be stdout
         :param callback: Callable, will be called just after updating the json file. This is intended for use when imported. See examples folder
         """
         log.info(f"Initializing mini_LiTOY with input_file={input_file}, output_json={output_json}")
@@ -44,14 +45,19 @@ class mini_LiTOY:
             log.error("output_json must be provided")
             raise ValueError("output_json must be provided")
 
+        if input_file == "stdin":
+            input_file = sys.stdin
+        if output_json == "stdout":
+            output_json = sys.stdout
+
         self.output_json = output_json
         self.callback = callback
 
-        # load previous data
+        # load previous data if not stdout
         self.lines = []
-        if output_json and Path(output_json).exists():
-            log.info("Loading data from %s", output_json)
-            with open(output_json, 'r') as file:
+        if self.output_json and isinstance(self.output_json, str) and Path(self.output_json).exists():
+            log.info("Loading data from %s", self.output_json)
+            with open(self.output_json, 'r') as file:
                 data = json.load(file)
                 assert isinstance(data, list) and all(isinstance(item, dict) for item in data), "JSON file must be a list of dictionaries"
             self.json_data = data
@@ -170,6 +176,9 @@ class mini_LiTOY:
                     )
         except KeyboardInterrupt:
             log.info("Exiting due to keyboard interrupt")
+            if self.output_json is sys.stdout:
+                with open(self.output_json, 'w', encoding='utf-8') as file:
+                    json.dump(self.json_data, file, ensure_ascii=False, indent=4)
             raise SystemExit("\nExiting. Goodbye!")
 
     @typechecked
@@ -274,6 +283,8 @@ class mini_LiTOY:
             raise AttributeError("Missing attribute: 'output_json'")
         if not hasattr(self, 'json_data') or not isinstance(self.json_data, list):
             raise AttributeError("Missing or invalid attribute: 'json_data'")
+        if self.output_json == sys.stdout:
+            return
 
         with open(self.output_json, 'w', encoding='utf-8') as file:
             json.dump(self.json_data, file, ensure_ascii=False, indent=4)
