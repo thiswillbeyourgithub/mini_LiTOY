@@ -241,6 +241,7 @@ def update_js(
                 page_id=json_articles[ind]["id"],
                 label_ids=dup_lab_id + old_lab_ids,
             )
+            json_articles.remove(article)
 
     # remove articles that were archived
     if extra_ids:
