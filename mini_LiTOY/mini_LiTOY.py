@@ -97,7 +97,7 @@ class mini_LiTOY:
             max_id = 1
 
         if input_file:
-            self.p("Reading input from %s", input_file)
+            self.p(f"Reading input from {input_file if input_file is not sys.stdin else 'stdin'}")
             with open(input_file, 'r') as file:
                 for line in file:
                     line = line.stripped()
