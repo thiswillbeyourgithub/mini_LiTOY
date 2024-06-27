@@ -1,7 +1,7 @@
 import time
 from pathlib import Path, PosixPath
 import json
-from typing import List, Union
+from typing import List, Union, Optional
 from typeguard import typechecked
 import fire
 from dateutil.relativedelta import relativedelta
@@ -79,7 +79,7 @@ def exec_query(base_query: str, d1: str, d2: str, omnivore_api_key: str) -> List
 @typechecked
 def update_js(
     json_file_to_update: Union[str, PosixPath],
-    omnivore_api_key: str = None,
+    omnivore_api_key: Optional[str] = None,
     start_date: str = "2023-04-01",
     base_query: str = "in:inbox -type:highlights sort:saved saved:$start_date..$end_date",
     time_window: int = 7,
@@ -186,7 +186,7 @@ def update_js(
 @typechecked
 def review(
     json_file_to_update: Union[str, PosixPath],
-    omnivore_api_key: str = None,
+    omnivore_api_key: Optional[str] = None,
     ):
     if omnivore_api_key is None:
         omnivore_api_key = _load_api_key()
