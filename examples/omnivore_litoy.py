@@ -14,12 +14,12 @@ import os
 
 from tqdm import tqdm
 from omnivoreql import OmnivoreQL
+from mini_LiTOY import mini_LiTOY
 
 # Configure logging
 logging.basicConfig(filename='omnivore_logs.txt', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 log = logging.getLogger()
 
-from mini_LiTOY import mini_LiTOY
 
 MAX_REQUEST_TRIALS = 5
 MAX_CONCURRENCY = 10
