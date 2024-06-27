@@ -1,7 +1,7 @@
 import time
 from pathlib import Path, PosixPath
 import json
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Dict
 from typeguard import typechecked
 import fire
 from dateutil.relativedelta import relativedelta
@@ -56,7 +56,7 @@ metadata_keys = [
 ]
 
 @typechecked
-def exec_query(base_query: str, d1: str, d2: str, omnivore_api_key: str, pbar: tqdm) -> List:
+def exec_query(base_query: str, d1: str, d2: str, omnivore_api_key: str, pbar: tqdm) -> Dict:
     "synchronous data fetcher"
     client = OmnivoreQL(omnivore_api_key)
     query = base_query.replace("$start_date", d1).replace("$end_date", d2)
