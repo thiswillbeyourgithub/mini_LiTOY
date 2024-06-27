@@ -56,7 +56,7 @@ metadata_keys = [
 ]
 
 @typechecked
-def exec_query(base_query: str, d1: str, d2: str, omnivore_api_key: str) -> List:
+def exec_query(base_query: str, d1: str, d2: str, omnivore_api_key: str, pbar: tqdm) -> List:
     "synchronous data fetcher"
     client = OmnivoreQL(omnivore_api_key)
     query = base_query.replace("$start_date", d1).replace("$end_date", d2)
@@ -78,6 +78,7 @@ def exec_query(base_query: str, d1: str, d2: str, omnivore_api_key: str) -> List
 
     edges = d["search"]["edges"]
     tqdm.write(f" * {d1}->{d2}: found {len(edges)} articles among {len(edges)}")
+    pbar.update(1)
     return d
 
 @typechecked
@@ -128,6 +129,7 @@ def update_js(
     present_ids = [article["id"] for article in json_articles]
 
     # execute async queries
+    pbar = tqdm(total=len(dates), desc="Querying", unit="date_ranges")
     async def main():
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_CONCURRENCY) as executor:
             loop = asyncio.get_event_loop()
@@ -139,8 +141,9 @@ def update_js(
                     d1,
                     d2,
                     omnivore_api_key,
+                    pbar,
                 )
-                for d1, d2 in tqdm(dates, desc="Querying", unit="date_ranges")
+                for d1, d2 in dates
             ]
             results = await asyncio.gather(*tasks)
         return results
