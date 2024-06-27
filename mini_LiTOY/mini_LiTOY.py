@@ -196,8 +196,9 @@ class mini_LiTOY:
             if self.output_json is sys.stdout:
                 with open(self.recovery_file, 'w', encoding='utf-8') as file:
                     json.dump(self.json_data, file, ensure_ascii=False, indent=4)
-                with open(self.output_json, 'w', encoding='utf-8') as file:
+                with sys.stdout as file:
                     json.dump(self.json_data, file, ensure_ascii=False, indent=4)
+                sys.stdout.flush()
             raise SystemExit("\nExiting. Goodbye!")
 
     @typechecked
@@ -308,7 +309,7 @@ class mini_LiTOY:
             json.dump(self.json_data, file, ensure_ascii=False, indent=4)
 
         # save to output only at the end if stdout
-        if self.output_json == sys.stdout:
+        if self.output_json is sys.stdout:
             return
 
         with open(self.output_json, 'w', encoding='utf-8') as file:
