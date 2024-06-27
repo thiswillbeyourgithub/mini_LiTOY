@@ -84,7 +84,7 @@ def exec_query(base_query: str, d1: str, d2: str, omnivore_api_key: str) -> List
 def update_js(
     json_file_to_update: Union[str, PosixPath],
     omnivore_api_key: Optional[str] = None,
-    start_date: str = "2023-04-01",
+    start_date: Union[str, datetime] = "2023-04-01",
     base_query: str = "in:inbox -type:highlights sort:saved saved:$start_date..$end_date",
     time_window: int = 7,
     ):
@@ -99,8 +99,8 @@ def update_js(
         raise Exception(f"Error when logging to OmnivoreQL then loading labels: '{err}'")
 
     # generates all date ranges from start_date to today
-    d = datetime.today()
-    end_date = f"{d.year}-{d.month}-{d.day}"  + relativedelta(days=1)
+    tmr = datetime.today() + relativedelta(days=1)
+    end_date = f"{tmr.year}-{tmr.month}-{tmr.day}"
     start_date = datetime.strptime(start_date, "%Y-%m-%d")
     end_date = datetime.strptime(end_date, "%Y-%m-%d")
     current_date = start_date
@@ -108,9 +108,9 @@ def update_js(
     while current_date <= end_date:
         newdate = [
                 (current_date - relativedelta(days=1)).strftime("%Y-%m-%d"),
-                (current_date + relativedelta(days=days_diff)).strftime("%Y-%m-%d"),
+                (current_date + relativedelta(days=time_window)).strftime("%Y-%m-%d"),
         ]
-        current_date += relativedelta(days=days_diff)
+        current_date += relativedelta(days=time_window)
         dates.append(newdate)
     dates = dates[::-1]
 
