@@ -160,6 +160,7 @@ class mini_LiTOY:
             clear()
             self.p("Picking two entries for comparison")
             entry1, entry2 = self.pick_two_entries()
+            assert entry1 in self.json_data and entry2 in self.json_data
             self.p(f"Displaying comparison table for entries {entry1['id']} and {entry2['id']}")
             self.display_comparison_table(entry1, entry2)
             bindings = KeyBindings()
@@ -334,6 +335,7 @@ class mini_LiTOY:
         entry3 = self.json_data[entries_nb[2]]
 
         assert entry2 != entry1 and entry3 != entry1
+        assert all(entr in self.json_data for entr in [entry1, entry2, entry3])
         if entry2["g_n_comparison"] <= entry3["g_n_comparison"]:
             return entry1, entry2
         else:
