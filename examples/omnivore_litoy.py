@@ -28,7 +28,7 @@ MAX_REQUEST_TRIALS = 5
 MAX_CONCURRENCY = 10
 
 @typechecked
-def load_api_key() -> str:
+def _load_api_key() -> str:
     if "OMNIVORE_API_KEY" not in os.environment:
         raise Exception("No OMNIVORE_API_KEY found in environment, and not given as arugment")
     elif not os.environment["OMNIVORE_API_KEY"]:
@@ -88,7 +88,7 @@ def update_js(
     time_window: int = 7,
     ):
     if omnivore_api_key is None:
-        omnivore_api_key = load_api_key()
+        omnivore_api_key = _load_api_key()
 
     log.info("Starting omnivore update")
     try:
@@ -192,7 +192,7 @@ def review(
     omnivore_api_key: str = None,
     ):
     if omnivore_api_key is None:
-        omnivore_api_key = load_api_key()
+        omnivore_api_key = _load_api_key()
     log.info("Starting omnivore review")
     try:
         client = OmnivoreQL(omnivore_api_key)
