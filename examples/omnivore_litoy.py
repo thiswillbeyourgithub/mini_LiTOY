@@ -7,6 +7,10 @@ import fire
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
 import logging
+import asyncio
+import concurrent.futures
+import random
+import os
 
 from tqdm import tqdm
 from omnivoreql import OmnivoreQL
@@ -19,6 +23,9 @@ import sys
 sys.path.insert(0, "..")
 from mini_LiTOY import mini_LiTOY
 sys.path.pop(0)
+
+MAX_REQUEST_TRIALS = 5
+MAX_CONCURRENCY = 10
 
 @typechecked
 def load_api_key() -> str:
@@ -122,35 +129,31 @@ def update_js(
     assert all(isinstance(article, dict) for article in json_articles), f"loaded json is not a list of dict"
 
     present_ids = [article["id"] for article in json_articles]
-    total_n_new = 0
 
-    nb_no_edges = 0
-    limit_no_article = 10
-    for d1, d2 in tqdm(dates):
-        query = base_query.replace("$start_date", d1).replace("$end_date", d2)
-        while True:
-            try:
-                d = client.get_articles(
-                        limit=1000,
-                        query=query,
+    # execute async queries
+    async def main():
+        with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_CONCURRENCY) as executor:
+            loop = asyncio.get_event_loop()
+            tasks = [
+                loop.run_in_executor(
+                    executor,
+                    exec_query,
+                    base_query,
+                    d1,
+                    d2,
+                    omnivore_api_key,
                 )
-                break
-            except Exception as err:
-                tqdm.write(
-                    f"Error when loading articles for query '{query}'\nError: '{err}'"
-                )
-                time.sleep(5)
+                for d1, d2 in tqdm(dates, desc="Querying", unit="date_ranges")
+            ]
+            results = await asyncio.gather(*tasks)
+        return results
+    results = asyncio.run(main())
+
+    assert len(results) == len(dates), f"Number of results={len(results)} but number of date ranges: {len(dates)}"
+
+    for idate, d1, d2 in tqdm(enumerate(dates), total=len(dates)):
+        d = results[idate]
         edges = d["search"]["edges"]
-
-        if not edges:
-            if nb_no_edges > limit_no_article:
-                tqdm.write(f"Found no articles for {nb_no_edges} windows in a row, stopping here.")
-                break
-            else:
-                nb_no_edges += 1
-                continue
-        else:
-            nb_no_edges = 0
 
         if len(edges) >= 100:
             raise Exception(f"Found {len(edges)} articles for date '{d1}..{d2}', this is above 100 so use a lower time_window.")
@@ -179,8 +182,6 @@ def update_js(
             )
             json_articles.append(new)
             n_new += 1
-
-        tqdm.write(f"From {d1} to {d2}: {n_new} new articles among {len(edges)} (total new: {total_n_new}, total articles {len(json_articles)})")
         json.dump(
             json_articles,
             json_file_to_update.open("w"),
