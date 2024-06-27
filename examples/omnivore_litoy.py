@@ -151,7 +151,8 @@ def update_js(
 
     assert len(results) == len(dates), f"Number of results={len(results)} but number of date ranges: {len(dates)}"
 
-    for idate, d1, d2 in tqdm(enumerate(dates), total=len(dates)):
+    for idate, _dat in tqdm(enumerate(dates), total=len(dates)):
+        d1, d2 = _dat
         d = results[idate]
         edges = d["search"]["edges"]
 
