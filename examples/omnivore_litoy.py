@@ -19,10 +19,7 @@ from omnivoreql import OmnivoreQL
 logging.basicConfig(filename='omnivore_log.txt', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 log = logging.getLogger()
 
-import sys
-sys.path.insert(0, "..")
 from mini_LiTOY import mini_LiTOY
-sys.path.pop(0)
 
 MAX_REQUEST_TRIALS = 5
 MAX_CONCURRENCY = 10
