@@ -1,16 +1,16 @@
 import sys
-from platformdirs import user_log_dir, user_config_dir
-from typing import Optional, Callable, Union
-from typeguard import typechecked
 import os
-import fire
+import logging
 import json
 from pathlib import Path, PosixPath
-import logging
+from typing import Optional, Callable, Union
+
+from platformdirs import user_log_dir, user_config_dir
+import fire
+from typeguard import typechecked
 from rich.markdown import Markdown
 from rich.console import Console
 from rich.table import Table
-
 from prompt_toolkit import prompt
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.shortcuts import clear
