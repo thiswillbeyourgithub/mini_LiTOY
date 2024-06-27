@@ -150,7 +150,7 @@ def update_js(
             ensure_ascii=False,
             indent=2,
         )
-    tqdm.write("Done updating {json_file_to_update}!")
+    tqdm.write(f"Done updating {json_file_to_update}!")
 
 @typechecked
 def review(
@@ -187,4 +187,3 @@ def review(
 
 if __name__== "__main__":
     fire.Fire()
-
