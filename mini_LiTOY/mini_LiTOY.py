@@ -5,6 +5,7 @@ import json
 import time
 from pathlib import Path, PosixPath
 from typing import Optional, Callable, Union
+import io
 
 from platformdirs import user_log_dir, user_config_dir, user_cache_dir
 import fire
@@ -25,8 +26,8 @@ class mini_LiTOY:
     @typechecked
     def __init__(
         self,
-        input_file: Optional[Union[PosixPath, str]] = None,
-        output_json: Optional[Union[PosixPath, str]] = None,
+        input_file: Optional[Union[PosixPath, str, io.TextIOWrapper]] = None,
+        output_json: Optional[Union[PosixPath, str, io.TextIOWrapper]] = None,
         callback: Optional[Callable] = None,
         verbose: bool = False,
         ):
