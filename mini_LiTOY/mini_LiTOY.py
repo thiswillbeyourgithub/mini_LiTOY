@@ -192,7 +192,7 @@ class mini_LiTOY:
             answers = {}
             for iq, q in enumerate(self.questions):
                 if len(self.questions) > 1:
-                    prefix = f"[{iq+1}/{len(questions)+1}] "
+                    prefix = f"[{iq+1}/{len(self.questions)+1}] "
                 else:
                     prefix = ""
 
@@ -207,7 +207,7 @@ class mini_LiTOY:
                     self.p("Skipping this comparison")
                     continue
                 assert answers[q].isdigit(), f"Answer should be an int"
-                answers[q] = int(ansers[q])
+                answers[q] = int(answers[q])
 
                 n_comparison_1 = entry1["all_ELO"][q]["q_n_comparison"]
                 K1 = self.inertia_values[n_comparison_1] if n_comparison_1 <= len(self.inertia_values) else self.inertia_values[-1]
@@ -215,7 +215,7 @@ class mini_LiTOY:
                 K2 = self.inertia_values[n_comparison_2] if n_comparison_2 <= len(self.inertia_values) else self.inertia_values[-1]
 
                 new_elo1, new_elo2 = self.update_elo(answers[q], entry1["all_ELO"][q]["q_ELO"], entry2["all_ELO"][q]["q_ELO"], K1, K2)
-                entry1["all_ELO"][q]["ELO"], entry2["all_ELO"][q]["ELO"] = new_elo1, new_elo2
+                entry1["all_ELO"][q]["q_ELO"], entry2["all_ELO"][q]["q_ELO"] = new_elo1, new_elo2
                 self.p(f"Updated ELOs: entry1={new_elo1}, entry2={new_elo2}")
 
                 entry1["all_ELO"][q]["q_n_comparison"] += 1
