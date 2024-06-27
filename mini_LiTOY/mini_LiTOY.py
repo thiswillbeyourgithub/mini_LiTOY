@@ -17,6 +17,10 @@ from prompt_toolkit import prompt
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.shortcuts import clear
 
+original_stdin = sys.stdin
+
+if not original_stdin.isatty():
+    stdin_content = sys.stdin.read()
 
 class mini_LiTOY:
     VERSION: str = "0.1.0"
@@ -99,7 +103,7 @@ class mini_LiTOY:
         if input_file:
             if input_file is sys.stdin:
                 self.p("Reading input from stdin")
-                input_content = input_file.read()
+                input_content = stdin_content
             else:
                 self.p(f"Reading input from {input_file}")
                 with open(input_file, 'r') as file:
