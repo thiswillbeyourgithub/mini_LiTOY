@@ -125,8 +125,8 @@ def update_js(
             raise Exception(f"Error when loading {json_file_to_update}: '{err}'")
     else:
         json_articles = []
-    assert isinstance(json_articles, list), f"loaded json is not a list"
-    assert all(isinstance(article, dict) for article in json_articles), f"loaded json is not a list of dict"
+    assert isinstance(json_articles, list), "loaded json is not a list"
+    assert all(isinstance(article, dict) for article in json_articles), "loaded json is not a list of dict"
 
     present_ids = [article["id"] for article in json_articles]
 
