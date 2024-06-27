@@ -234,6 +234,7 @@ def update_js(
             labels = client.get_labels()["labels"]["labels"]
         assert DUPLICATE_LABEL in [lab["name"] for lab in labels], f"Failed to create label {DUPLICATE_LABEL}"
         dup_lab_id = [lab["id"] for lab in labels if lab["name"] == DUPLICATE_LABEL]
+        assert len(dup_lab_id) == 1
 
         for ind in dup_ind:
             article = json_articles[ind]
