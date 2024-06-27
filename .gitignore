@@ -1,4 +1,10 @@
 **/*pycache*
 **/*egg-info*
+**/*logs.txt
+
+examples/*.json
+
+.env
+.env.leave
 
 .aider*
