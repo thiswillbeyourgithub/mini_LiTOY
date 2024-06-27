@@ -15,6 +15,7 @@ from rich.console import Console
 from rich.table import Table
 from prompt_toolkit import prompt
 from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.keys import Keys
 from prompt_toolkit.shortcuts import clear
 
 original_stdin = sys.stdin
@@ -141,6 +142,7 @@ class mini_LiTOY:
 
                 self.skip = False
 
+                @bindings.add(Keys.Enter)
                 @bindings.add(' ')
                 @bindings.add('s')
                 @bindings.add('1')
@@ -155,9 +157,11 @@ class mini_LiTOY:
                 @bindings.add('t')
                 def _(event):
                     key = event.key_sequence[0].key
+                    if key is Keys.Enter:
+                        key = event.app.current_buffer.text.strip()
                     if key == "s" or key == " ":
                         self.skip = True
-                    if key in 'azert':
+                    elif key in 'azert':
                         key = str('azert'.index(key) + 1)
                     event.app.exit(result=key)
 
