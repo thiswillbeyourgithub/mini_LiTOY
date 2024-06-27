@@ -136,8 +136,8 @@ class mini_LiTOY:
                             q: self.LockedDict({
                                 "q_n_comparison": 0,
                                 "q_ELO": self.ELO_default
-                            } for q in self.questions
-                        }),
+                            }) for q in self.questions
+                        },
                         "id": max_id,
                         "metadata": {},
                     })
