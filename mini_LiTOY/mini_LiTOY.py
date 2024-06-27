@@ -23,7 +23,7 @@ class mini_LiTOY:
     VERSION: str = "0.1.1"
     inertia_values = [30, 25, 20, 15, 10]
     question = "What's the relative importance of those items to you?'"
-    ELO_norm = 400
+    ELO_norm = 40
     ELO_default = 100
 
     @typechecked
