@@ -21,6 +21,15 @@ from mini_LiTOY import mini_LiTOY
 sys.path.pop(0)
 
 @typechecked
+def load_api_key() -> str:
+    if "OMNIVORE_API_KEY" not in os.environment:
+        raise Exception("No OMNIVORE_API_KEY found in environment, and not given as arugment")
+    elif not os.environment["OMNIVORE_API_KEY"]:
+        raise Exception("Empty OMNIVORE_API_KEY found in environment")
+    omnivore_api_key = os.environment["OMNIVORE_API_KEY"]
+    return omnivore_api_key
+
+@typechecked
 def generate_dates(dateA: str, dateB: str, days_diff: int) -> List:
     start_date = datetime.strptime(dateA, "%Y-%m-%d")
     end_date = datetime.strptime(dateB, "%Y-%m-%d")
@@ -54,13 +63,41 @@ metadata_keys = [
 ]
 
 @typechecked
+def exec_query(base_query: str, d1: str, d2: str, omnivore_api_key: str) -> List:
+    "synchronous data fetcher"
+    client = OmnivoreQL(omnivore_api_key)
+    query = base_query.replace("$start_date", d1).replace("$end_date", d2)
+    trial = 0
+    time.sleep(random.random() * 10 / 2)   # randomize 0-5s the request start
+    while trial < MAX_REQUEST_TRIALS:
+        trial += 1
+        try:
+            d = client.get_articles(
+                    limit=1000,
+                    query=query,
+            )
+            break
+        except Exception as err:
+            tqdm.write(
+                f"Error when loading articles for query '{query}'\nError: '{err}'"
+            )
+            time.sleep(5)
+
+    edges = d["search"]["edges"]
+    tqdm.write(f" * {d1}->{d2}: found {len(edges)} articles among {len(edges)}")
+    return d
+
+@typechecked
 def update_js(
     json_file_to_update: Union[str, PosixPath],
-    omnivore_api_key: str,
+    omnivore_api_key: str = None,
     start_date: str = "2023-04-01",
     base_query: str = "in:inbox -type:highlights sort:saved saved:$start_date..$end_date",
     time_window: int = 7,
     ):
+    if omnivore_api_key is None:
+        omnivore_api_key = load_api_key()
+
     log.info("Starting omnivore update")
     try:
         client = OmnivoreQL(omnivore_api_key)
@@ -155,8 +192,10 @@ def update_js(
 @typechecked
 def review(
     json_file_to_update: Union[str, PosixPath],
-    omnivore_api_key: str,
+    omnivore_api_key: str = None,
     ):
+    if omnivore_api_key is None:
+        omnivore_api_key = load_api_key()
     log.info("Starting omnivore review")
     try:
         client = OmnivoreQL(omnivore_api_key)
