@@ -2,10 +2,11 @@ import sys
 import os
 import logging
 import json
+import time
 from pathlib import Path, PosixPath
 from typing import Optional, Callable, Union
 
-from platformdirs import user_log_dir, user_config_dir
+from platformdirs import user_log_dir, user_config_dir, user_cache_dir
 import fire
 from typeguard import typechecked
 from rich.markdown import Markdown
@@ -37,6 +38,8 @@ class mini_LiTOY:
         :param callback: Callable, will be called just after updating the json file. This is intended for use when imported. See examples folder
         """
         log.info(f"Initializing mini_LiTOY with input_file={input_file}, output_json={output_json}")
+        self.recovery_file = recovery_dir / str(int(time.time()))
+
         if not input_file and not output_json:
             log.error("Either input_file or output_json must be provided")
             raise ValueError("Either input_file or output_json must be provided")
@@ -177,6 +180,8 @@ class mini_LiTOY:
         except KeyboardInterrupt:
             log.info("Exiting due to keyboard interrupt")
             if self.output_json is sys.stdout:
+                with open(self.recovery_file, 'w', encoding='utf-8') as file:
+                    json.dump(self.json_data, file, ensure_ascii=False, indent=4)
                 with open(self.output_json, 'w', encoding='utf-8') as file:
                     json.dump(self.json_data, file, ensure_ascii=False, indent=4)
             raise SystemExit("\nExiting. Goodbye!")
@@ -283,6 +288,12 @@ class mini_LiTOY:
             raise AttributeError("Missing attribute: 'output_json'")
         if not hasattr(self, 'json_data') or not isinstance(self.json_data, list):
             raise AttributeError("Missing or invalid attribute: 'json_data'")
+
+        # always save to recovery file
+        with open(self.recovery_file, 'w', encoding='utf-8') as file:
+            json.dump(self.json_data, file, ensure_ascii=False, indent=4)
+
+        # save to output only at the end if stdout
         if self.output_json == sys.stdout:
             return
 
@@ -317,12 +328,19 @@ except Exception as err:
         raise Exception(erro(f"# Errors when trying to find an appropriate log dir:\n- '{err}'\n- '{err2}'"))
 
 log_dir = Path(log_dir)
-assert Path(log_dir).exists() and Path(log_dir).is_dir()
+assert Path(log_dir).exists() and Path(log_dir).is_dir(), f"Error with log_dir: '{log_dir}'"
 log_file = str((log_dir / "mini_litoy.logs.txt").resolve().absolute())
 
 # Configure logging
 logging.basicConfig(filename=log_file, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 log = logging.getLogger()
+
+cache_dir = user_cache_dir(
+appname="mini_LiTOY",
+version=mini_LiTOY.VERSION,
+)
+assert Path(cache_dir).exists() and Path(cache_dir).is_dir(), f"Error with cache_dir: '{cache_dir}'"
+recovery_dir = cache_dir / "recovery"
 
 print(f"Logfile: {log_file}")
 
