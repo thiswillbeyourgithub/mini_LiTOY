@@ -50,6 +50,19 @@ metadata_keys = [
 ]
 
 @typechecked
+def label_input(
+    name: str,
+    color:
+    str = "#ff0000",
+    description: str = "Label created by mini_litoy/examples/omnivore_litoy.py",
+    ) -> dict:
+    return CreateLabelInput(
+        DUPLICATE_LABEL,
+        "#ff0000",  # red
+        "Label created by mini_litoy/examples/omnivore_litoy.py"
+    )
+
+@typechecked
 def exec_query(base_query: str, d1: str, d2: str, omnivore_api_key: str, pbar: tqdm) -> Dict:
     "synchronous data fetcher"
     client = OmnivoreQL(omnivore_api_key)
@@ -213,23 +226,19 @@ def update_js(
         # create label if missing
         if DUPLICATE_LABEL not in [lab["name"] for lab in labels]:
             log.info(f'Creating label "{DUPLICATE_LABEL}"')
-            client.create_label(
-                CreateLabelInput(
-                    DUPLICATE_LABEL,
-                    "#ff0000",  # red
-                    "Label created by mini_litoy/examples/omnivore_litoy.py"
-                )
-            )
+            client.create_label(label_input(name=DUPLICATE_LABEL))
             labels = client.get_labels()["labels"]["labels"]
         assert DUPLICATE_LABEL in [lab["name"] for lab in labels], f"Failed to create label {DUPLICATE_LABEL}"
-        dup_lab_id = [lab["id"] for lab in labels if lab["name"] == DUPLICATE_LABEL][0]
+        dup_lab_id = [lab["id"] for lab in labels if lab["name"] == DUPLICATE_LABEL]
 
         for ind in dup_ind:
-            page_id=json_articles[ind]["id"]
+            article = json_articles[ind]
+            page_id=article["id"]
+            old_lab_ids = [lab["id"] for lab in labels if lab["name"] in article["metadata"]["labels"]]
             log.info(f"Adding duplicate label to article with id '{page_id}'")
             client.set_page_labels_by_ids(
                 page_id=json_articles[ind]["id"],
-                label_ids=dup_lab_id,
+                label_ids=dup_lab_id + old_lab_ids,
             )
 
     # remove articles that were archived
@@ -264,7 +273,7 @@ def review(
     log.info("Starting omnivore review")
     try:
         client = OmnivoreQL(omnivore_api_key)
-        labels = client.get_labels()["labels"]["labels"]
+        all_labels = client.get_labels()["labels"]["labels"]
     except Exception as err:
         raise Exception(f"Error when logging to OmnivoreQL then loading labels: '{err}'")
 
@@ -278,8 +287,39 @@ def review(
     assert all(isinstance(article, dict) for article in json_articles), f"loaded json is not a list of dict"
 
     @typechecked
-    def update_labels(instance: mini_LiTOY, entry1: dict, entry2: dict) -> None:
-        # TODO: add ELO label
+    def update_labels(
+        instance: mini_LiTOY,
+        entry1: dict,
+        entry2: dict,
+        client: OmnivoreQL = client,
+        all_labels: List = all_labels,
+        ) -> None:
+        breakpoint()
+        for entr in [entry1, entry2]:
+            entr_labels = entr["metadata"]["labels"]
+            score = str(int(entr["g_ELO"] / 10))
+            new_lab = f"litoy_{score}"
+
+            # label not changed
+            if new_lab in entr_labels:
+                continue
+
+            # create label if needed
+            if new_lab not in [lab["name"] for lab in all_labels]:
+                client.create_label(label_input(name=new_lab))
+                all_labels = client.get_labels()["labels"]["labels"]
+
+            # add the label
+            new_lab_id = [lab["id"] for lab in all_labels]
+            if any(lab.startswith("litoy_") for lab in entr_labels):
+                pass
+
+            else:
+                client.set_page_labels_by_ids(
+                    page_id=entr["id"],
+                    label_ids=new_lab_id,
+                )
+
         breakpoint()
 
     log.info("Starting mini LiTOY")
