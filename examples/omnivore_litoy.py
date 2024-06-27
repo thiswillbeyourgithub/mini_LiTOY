@@ -172,10 +172,16 @@ def update_js(
             new = default_dict.copy()
             new["id"] = n["id"]
             new["entry"] = n['title']
-            if n["author"] and n["author"] not in new["entry"]:
-                new["entry"] += f"\nby {n['author']}"
-            if n["siteName"] and n["siteName"] not in new["entry"]:
-                new["entry"] += f"\non {n['siteName']}"
+            if n["author"] and n["siteName"]:
+                if n["author"] in n["siteName"]:
+                    new["entry"] += f"\non {n['siteName']}"
+                elif n["siteName"] in n["author"]:
+                    new["entry"] += f"\nby {n['author']}"
+            else:
+                if n["author"] and n["author"] not in new["entry"]:
+                    new["entry"] += f"\nby {n['author']}"
+                if n["siteName"] and n["siteName"] not in new["entry"]:
+                    new["entry"] += f"\non {n['siteName']}"
             new["metadata"] = {k: n[k] for k in metadata_keys}
             # don't save labels as dict
             new["metadata"]["labels"] = ",".join(
