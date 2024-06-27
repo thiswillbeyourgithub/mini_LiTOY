@@ -84,14 +84,17 @@ class mini_LiTOY:
                     f"Entry missing key {k}:\n{entry}"
                 )
 
-        max_id = max(
-            [
-                int(item["id"])
-                if str(item["id"]).isdigit()
-                else it
-                for it, item in enumerate(self.json_data)
-            ]
-        )
+        if self.json_data:
+            max_id = max(
+                [
+                    int(item["id"])
+                    if str(item["id"]).isdigit()
+                    else it
+                    for it, item in enumerate(self.json_data)
+                ]
+            )
+        else:
+            max_id = 1
 
         if input_file:
             self.p("Reading input from %s", input_file)
