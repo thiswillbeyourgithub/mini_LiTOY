@@ -105,8 +105,8 @@ class mini_LiTOY:
                     d = self.LockedDict(d)
                 assert isinstance(d, self.LockedDict)
                 assert isinstance(q, str), f"questions in entry #{ie} entry['all_ELO'] must be strings not {type(q)} '({q})'"
-                assert all(dd in ["q_n_comparison", "qELO"] for dd in  d.keys()), f"Invalid entry['all_ELO']: {q}:{d} in entry #{ie}"
-                assert all(k in d.keys() for k in ["q_n_comparison", "qELO"]), f"Invalid entry['all_ELO']: {q}:{d} in entry #{ie}"
+                assert all(dd in ["q_n_comparison", "q_ELO"] for dd in  d.keys()), f"Invalid entry['all_ELO']: {q}:{d} in entry #{ie}"
+                assert all(k in d.keys() for k in ["q_n_comparison", "q_ELO"]), f"Invalid entry['all_ELO']: {q}:{d} in entry #{ie}"
 
             # all question of the dict must be part of self.questions, but the dict can have fewer, in that case they will be created here
             for q in entry["all_ELO"].keys():
@@ -334,7 +334,7 @@ class mini_LiTOY:
         entry3 = self.json_data[entries_nb[2]]
 
         assert entry2 != entry1 and entry3 != entry1
-        if entry2["n_comparison"] <= entry3["n_comparison"]:
+        if entry2["g_n_comparison"] <= entry3["g_n_comparison"]:
             return entry1, entry2
         else:
             return entry1, entry3
