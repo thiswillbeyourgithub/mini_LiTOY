@@ -153,6 +153,7 @@ def update_js(
             results = await asyncio.gather(*tasks)
         return results
     results = asyncio.run(main())
+    pbar.close()
 
     assert len(results) == len(dates), f"Number of results={len(results)} but number of date ranges: {len(dates)}"
 
