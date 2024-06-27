@@ -112,6 +112,28 @@ class mini_LiTOY:
             for q in entry["all_ELO"].keys():
                 assert q in self.questions, f"Entry #{ie} contains a question that is not part of self.questions: '{q}'"
 
+        # check no entries have the same name or id
+        texts = [ent["entry"] for ent in self.json_data]
+        ids = [ent["id"] for ent in self.json_data]
+        dup_t = set()
+        dup_i = set()
+        for t in texts:
+            if texts.count(t) > 1:
+                dup_t.add(t)
+        for i in ids:
+            if ids.count(i) > 1:
+                dup_i.add(i)
+        if dup_t:
+            self.p(f"Found {len(dup_t)} entries whose 'entry' text is identical:", type="error")
+            for t in dup_t:
+                self.p(t, type="error")
+        if dup_i:
+            self.p(f"Found {len(dup_i)} entries whose 'id' value is identical:", type="error")
+            for i in dup_i:
+                self.p(i, type="error")
+        if dup_t or dup_i:
+            raise Exception()
+
         if self.json_data:
             max_id = max(
                 [
