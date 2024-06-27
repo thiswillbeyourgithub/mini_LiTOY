@@ -28,9 +28,9 @@ MAX_CONCURRENCY = 10
 def _load_api_key() -> str:
     if "OMNIVORE_API_KEY" not in os.environment:
         raise Exception("No OMNIVORE_API_KEY found in environment, and not given as arugment")
-    elif not os.environment["OMNIVORE_API_KEY"]:
+    elif not os.environ["OMNIVORE_API_KEY"]:
         raise Exception("Empty OMNIVORE_API_KEY found in environment")
-    omnivore_api_key = os.environment["OMNIVORE_API_KEY"]
+    omnivore_api_key = os.environ["OMNIVORE_API_KEY"]
     return omnivore_api_key
 
 default_dict = {
