@@ -97,7 +97,7 @@ class mini_LiTOY:
                 if q not in entry["all_ELO"]:
                     entry["all_ELO"][q] = LockedDict({"q_n_comparison": 0, "q_ELO": self.ELO_default})
 
-            for q, d in entry["all_ELO"].keys():
+            for q, d in entry["all_ELO"].items():
                 assert isinstance(d, dict)
                 assert q in self.questions, f"Entry #{ie} contains a question that is not part of self.questions: '{q}'"
                 if not isinstance(d, self.LockedDict):
