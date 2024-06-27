@@ -24,6 +24,7 @@ class mini_LiTOY:
     inertia_values = [30, 25, 20, 15, 10]
     question = "What's the relative importance of those items to you?'"
     ELO_norm = 400
+    ELO_default = 100
 
     @typechecked
     def __init__(
@@ -106,7 +107,7 @@ class mini_LiTOY:
                     entry = {
                         "entry": line,
                         "n_comparison": 0,
-                        "ELO": 100,  # Sensible default ELO
+                        "ELO": self.ELO_default,  # Sensible default ELO
                         "id": max_id,
                         "metadata": {},
                     }
