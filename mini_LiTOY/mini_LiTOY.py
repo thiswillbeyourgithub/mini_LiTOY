@@ -315,7 +315,7 @@ class mini_LiTOY:
     def update_elo(self, answer: int, elo1: int, elo2: int, k1: int, k2: int) -> tuple[int, int]:
         """
         Update ELO scores based on the answer.
-        
+
         :param answer: int, number of wins for the first player (1-5)
         :param elo1: int, ELO score of the first player
         :param elo2: int, ELO score of the second player
