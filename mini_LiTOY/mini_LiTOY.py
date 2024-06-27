@@ -163,10 +163,12 @@ class mini_LiTOY:
                         key = str('azert'.index(key) + 1)
                     event.app.exit(result=key)
 
+
+
                 answer = prompt(f"{self.question} (1-5 or a-z-e-r-t and s or ' ' to skip): ", key_bindings=bindings)
                 self.p(f"User selected answer: '{answer}'")
                 if self.skip:
-                    self.p(f"Skipping this comparison")
+                    self.p("Skipping this comparison")
                     continue
                 assert answer.isdigit(), f"Answer should be an int: '{answer}'"
                 answer = int(answer)
