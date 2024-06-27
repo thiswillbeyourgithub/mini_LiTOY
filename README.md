@@ -4,7 +4,7 @@ Minimalist approach to the [LiTOY task sorting algorithm](https://github.com/thi
 # Features
 * Minimalist
 * Statically typed via typeguard
-* Made to be extensible (can read from stdin and stdout)
+* Made to be extensible (can read from stdin)
 * Supports callbacks
 
 # Questions

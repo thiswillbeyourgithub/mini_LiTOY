@@ -41,7 +41,7 @@ class mini_LiTOY:
         ----------
 
         :param input_file: Path a txt file, parsed as one entry per line, ignoring empty lines and those starting with #. If "stdin", will read from stdin.
-        :param output_json: Path the json file that will be updated as ELOs get updated. If "stdout", will be stdout.
+        :param output_json: Path the json file that will be updated as ELOs get updated.
         :param callback: Callable, will be called just after updating the json file. This is intended for use when imported. See examples folder.
         :param verbose: bool, increase verbosity
         """
@@ -65,9 +65,9 @@ class mini_LiTOY:
         self.output_json = output_json
         self.callback = callback
 
-        # load previous data if not stdout
+        # load previous data
         self.lines = []
-        if self.output_json and self.output_json != "stdout" and Path(self.output_json).exists():
+        if self.output_json and Path(self.output_json).exists():
             self.p("Loading data from %s", self.output_json)
             with open(self.output_json, 'r') as file:
                 data = json.load(file)
@@ -201,15 +201,7 @@ class mini_LiTOY:
                     )
         except (KeyboardInterrupt, EOFError):
             self.p("Exiting due to keyboard interrupt")
-            if self.output_json == "stdout":
-                with open(self.recovery_file, 'w', encoding='utf-8') as file:
-                    json.dump(self.json_data, file, ensure_ascii=False, indent=4)
-                with sys.stdout as file:
-                    json.dump(self.json_data, file, ensure_ascii=False, indent=4)
-                sys.stdout.flush()
-                raise SystemExit()
-            else:
-                raise SystemExit("\nExiting. Goodbye!")
+            raise SystemExit("\nExiting. Goodbye!")
 
     @typechecked
     def display_comparison_table(self, entry1: dict, entry2: dict) -> None:
@@ -317,10 +309,6 @@ class mini_LiTOY:
         # always save to recovery file
         with open(self.recovery_file, 'w', encoding='utf-8') as file:
             json.dump(self.json_data, file, ensure_ascii=False, indent=4)
-
-        # save to output only at the end if stdout
-        if self.output_json == "stdout":
-            return
 
         with open(self.output_json, 'w', encoding='utf-8') as file:
             json.dump(self.json_data, file, ensure_ascii=False, indent=4)
