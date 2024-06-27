@@ -287,15 +287,16 @@ def review(
     assert isinstance(json_articles, list), f"loaded json is not a list"
     assert all(isinstance(article, dict) for article in json_articles), f"loaded json is not a list of dict"
 
+    all_labels = [all_labels]
+
     @typechecked
     def update_labels(
         instance: mini_LiTOY,
         entry1: dict,
         entry2: dict,
         client: OmnivoreQL = client,
-        all_labels: List = all_labels,
+        all_labels: List[List] = all_labels,
         ) -> None:
-        breakpoint()
         for entr in [entry1, entry2]:
             entr_labels = entr["metadata"]["labels"]
             score = str(int(entr["g_ELO"] / 10))
@@ -303,25 +304,26 @@ def review(
 
             # label not changed
             if new_lab in entr_labels:
+                log.info(f"Entry with id {entr['id']} already has the label {new_lab}")
                 continue
 
             # create label if needed
-            if new_lab not in [lab["name"] for lab in all_labels]:
+            if new_lab not in [lab["name"] for lab in all_labels[0]]:
+                log.info(f"Entry with id {entr['id']}: creating label {new_lab}")
                 client.create_label(label_input(name=new_lab))
-                all_labels = client.get_labels()["labels"]["labels"]
+                all_labels[0] = client.get_labels()["labels"]["labels"]
 
             # add the label
-            new_lab_id = [lab["id"] for lab in all_labels]
-            if any(lab.startswith("litoy_") for lab in entr_labels):
-                pass
-
-            else:
-                client.set_page_labels_by_ids(
-                    page_id=entr["id"],
-                    label_ids=new_lab_id,
-                )
-
-        breakpoint()
+            old_lab_ids = [
+                lab["id"] for lab in all_labels[0]
+                if lab["name"] in entr["metadata"]["labels"] and not lab["name"].startswith("litoy_")
+            ]
+            new_lab_id = [lab["id"] for lab in all_labels[0]]
+            log.info(f"Entry with id {entr['id']}: setting labels to {new_lab_id + old_lab_ids}")
+            client.set_page_labels_by_ids(
+                page_id=entr["id"],
+                label_ids=new_lab_id + old_lab_ids,
+            )
 
     log.info("Starting mini LiTOY")
     mini_litoy = mini_LiTOY(
