@@ -343,6 +343,7 @@ class mini_LiTOY:
             raise ValueError("Answer must be a digit between 1 and 5")
 
         expected_score1 = 1 / (1 + 10 ** ((elo2 - elo1) / self.ELO_norm))
+        assert expected_score1 < 1 and expected_score1 > 0
         expected_score2 = 1 - expected_score1
 
         actual_score1 = answer / 5
