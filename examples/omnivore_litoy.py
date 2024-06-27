@@ -33,15 +33,18 @@ def _load_api_key() -> str:
     omnivore_api_key = os.environ["OMNIVORE_API_KEY"]
     return omnivore_api_key
 
-default_dict = {
+default_dict = mini_LiTOY.LockedDict({
     "entry": None,
     "id": None,
     "metadata": {},
 
     "g_n_comparison": 0,
     "g_ELO": mini_LiTOY.ELO_default,
-    "all_ELO": {},
-}
+    "all_ELO": {
+        q: mini_LiTOY.LockedDict({"q_ELO": mini_LiTOY.ELO_default, "q_n_comparison": 0})
+        for q in mini_LiTOY.questions
+    },
+})
 metadata_keys = [
     "description",
     "siteName",
