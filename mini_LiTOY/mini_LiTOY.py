@@ -28,16 +28,21 @@ class mini_LiTOY:
         input_file: Optional[Union[PosixPath, str]] = None,
         output_json: Optional[Union[PosixPath, str]] = None,
         callback: Optional[Callable] = None,
+        verbose: bool = False,
         ):
         """
         Parameters
         ----------
 
-        :param input_file: Path a txt file, parsed as one entry per line, ignoring empty lines and those starting with #. If "stdin", will read from stdin
-        :param output_json: Path the json file that will be updated as ELOs get updated. If "stdout", will be stdout
-        :param callback: Callable, will be called just after updating the json file. This is intended for use when imported. See examples folder
+        :param input_file: Path a txt file, parsed as one entry per line, ignoring empty lines and those starting with #. If "stdin", will read from stdin.
+        :param output_json: Path the json file that will be updated as ELOs get updated. If "stdout", will be stdout.
+        :param callback: Callable, will be called just after updating the json file. This is intended for use when imported. See examples folder.
+        :param verbose: bool, increase verbosity
         """
-        log.info(f"Initializing mini_LiTOY with input_file={input_file}, output_json={output_json}")
+        self.verbose = verbose
+        self.p(f"Logdir: {log_dir}")
+        self.p(f"recovery_dir: {recovery_dir}")
+        self.p(f"Initializing mini_LiTOY with input_file={input_file}, output_json={output_json}")
         self.recovery_file = recovery_dir / str(int(time.time()))
 
         if not input_file and not output_json:
@@ -59,7 +64,7 @@ class mini_LiTOY:
         # load previous data if not stdout
         self.lines = []
         if self.output_json and isinstance(self.output_json, str) and Path(self.output_json).exists():
-            log.info("Loading data from %s", self.output_json)
+            self.p("Loading data from %s", self.output_json)
             with open(self.output_json, 'r') as file:
                 data = json.load(file)
                 assert isinstance(data, list) and all(isinstance(item, dict) for item in data), "JSON file must be a list of dictionaries"
@@ -88,7 +93,7 @@ class mini_LiTOY:
         )
 
         if input_file:
-            log.info("Reading input from %s", input_file)
+            self.p("Reading input from %s", input_file)
             with open(input_file, 'r') as file:
                 for line in file:
                     line = line.stripped()
@@ -106,7 +111,7 @@ class mini_LiTOY:
                         self.json_data.append(entry)
 
         self.console = Console()
-        log.info("Starting comparison loop")
+        self.p("Starting comparison loop")
         self.run_comparison_loop()
 
     @typechecked
@@ -115,9 +120,9 @@ class mini_LiTOY:
         try:
             while True:
                 clear()
-                log.info("Picking two entries for comparison")
+                self.p("Picking two entries for comparison")
                 entry1, entry2 = self.pick_two_entries()
-                log.info(f"Displaying comparison table for entries {entry1['id']} and {entry2['id']}")
+                self.p(f"Displaying comparison table for entries {entry1['id']} and {entry2['id']}")
                 self.display_comparison_table(entry1, entry2)
                 bindings = KeyBindings()
 
@@ -144,9 +149,9 @@ class mini_LiTOY:
                     event.app.exit(result=key)
 
                 answer = prompt(f"{self.question} (1-5 or a-z-e-r-t and s or ' ' to skip): ", key_bindings=bindings)
-                log.info(f"User selected answer: '{answer}'")
+                self.p(f"User selected answer: '{answer}'")
                 if self.skip:
-                    log.info(f"Skipping this comparison")
+                    self.p(f"Skipping this comparison")
                     continue
                 assert answer.isdigit(), f"Answer should be an int: '{answer}'"
                 answer = int(answer)
@@ -158,7 +163,7 @@ class mini_LiTOY:
 
                 new_elo1, new_elo2 = self.update_elo(answer, entry1["ELO"], entry2["ELO"], K1, K2)
                 entry1["ELO"], entry2["ELO"] = new_elo1, new_elo2
-                log.info("Updated ELOs: entry1=%d, entry2=%d", new_elo1, new_elo2)
+                self.p("Updated ELOs: entry1=%d, entry2=%d", new_elo1, new_elo2)
 
                 entry1["n_comparison"] += 1
                 entry2["n_comparison"] += 1
@@ -166,19 +171,19 @@ class mini_LiTOY:
                 assert entry1 in self.json_data and entry2 in self.json_data
 
                 self.store_json_data()
-                log.info("Stored JSON data")
+                self.p("Stored JSON data")
 
                 counter += 1
 
                 if self.callback is not None:
-                    log.info("Calling callback")
+                    self.p("Calling callback")
                     self.callback(
                         self,
                         entry1,
                         entry2,
                     )
         except KeyboardInterrupt:
-            log.info("Exiting due to keyboard interrupt")
+            self.p("Exiting due to keyboard interrupt")
             if self.output_json is sys.stdout:
                 with open(self.recovery_file, 'w', encoding='utf-8') as file:
                     json.dump(self.json_data, file, ensure_ascii=False, indent=4)
@@ -262,7 +267,7 @@ class mini_LiTOY:
     def pick_two_entries(self) -> tuple[dict, dict]:
         """
         Pick three entries at random, then return the first of the three and the one with the lowest n_comparison between the other two.
-        
+
         :return: tuple, two entries as dictionaries
         """
         import random
@@ -299,6 +304,20 @@ class mini_LiTOY:
 
         with open(self.output_json, 'w', encoding='utf-8') as file:
             json.dump(self.json_data, file, ensure_ascii=False, indent=4)
+
+    @typechecked
+    def p(self, message: str, type="info") -> str:
+        "printer"
+        if type == "info":
+            log.info(message)
+            if self.verbose:
+                print(message)
+        elif type == "error":
+            log.error(message)
+            erro(message)
+        else:
+            raise ValueError(type)
+        return message
 
 console = Console()
 
@@ -341,8 +360,6 @@ version=mini_LiTOY.VERSION,
 )
 assert Path(cache_dir).exists() and Path(cache_dir).is_dir(), f"Error with cache_dir: '{cache_dir}'"
 recovery_dir = cache_dir / "recovery"
-
-print(f"Logfile: {log_file}")
 
 
 if __name__ == "__main__":
