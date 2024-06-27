@@ -244,7 +244,8 @@ def update_js(
                 page_id=json_articles[ind]["id"],
                 label_ids=dup_lab_id + old_lab_ids,
             )
-            json_articles.remove(article)
+            while article in json_articles:
+                json_articles.remove(article)
 
     # remove articles that were archived
     if extra_ids:
@@ -257,7 +258,8 @@ def update_js(
             article = article[0]
             entry = article["entry"]
             log.info(f"- {entry}")
-            json_articles.remove(article)
+            while article in json_articles:
+                json_articles.remove(article)
 
     assert json_articles, "No article left!"
     json.dump(
