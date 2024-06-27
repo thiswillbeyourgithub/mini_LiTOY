@@ -334,6 +334,7 @@ def review(
     mini_litoy = mini_LiTOY(
         output_json=json_file_to_update,
         callback=update_labels,
+        verbose=True,
     )
 
 
