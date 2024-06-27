@@ -319,6 +319,8 @@ class mini_LiTOY:
             raise ValueError(type)
         return message
 
+mini_LiTOY.__doc__ = mini_LiTOY.__init__.__doc__
+
 console = Console()
 
 @typechecked
