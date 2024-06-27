@@ -187,12 +187,35 @@ def update_js(
             )
             json_articles.append(new)
             n_new += 1
-        json.dump(
-            json_articles,
-            json_file_to_update.open("w"),
-            ensure_ascii=False,
-            indent=2,
-        )
+
+    # check no entries have the same name or id
+    texts = [ent["entry"] for ent in json_articles]
+    ids = [ent["id"] for ent in json_articles]
+    dup_t = set()
+    dup_i = set()
+    for t in texts:
+        if texts.count(t) > 1:
+            dup_t.add(t)
+    for i in ids:
+        if ids.count(i) > 1:
+            dup_i.add(i)
+    if dup_t:
+        print(f"Found {len(dup_t)} entries whose 'entry' text is identical:")
+        for t in dup_t:
+            print(f"- {t}")
+    if dup_i:
+        print(f"Found {len(dup_i)} entries whose 'id' value is identical:")
+        for i in dup_i:
+            print(f"- {i}")
+    if dup_t or dup_i:
+        raise Exception()
+
+    json.dump(
+        json_articles,
+        json_file_to_update.open("w"),
+        ensure_ascii=False,
+        indent=2,
+    )
     tqdm.write(f"Done updating {json_file_to_update}!")
 
 @typechecked
