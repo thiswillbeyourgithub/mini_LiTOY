@@ -61,15 +61,13 @@ class mini_LiTOY:
 
         if input_file == "stdin":
             input_file = sys.stdin
-        if output_json == "stdout":
-            output_json = sys.stdout
 
         self.output_json = output_json
         self.callback = callback
 
         # load previous data if not stdout
         self.lines = []
-        if self.output_json and isinstance(self.output_json, str) and Path(self.output_json).exists():
+        if self.output_json and self.output_json != "stdout" and Path(self.output_json).exists():
             self.p("Loading data from %s", self.output_json)
             with open(self.output_json, 'r') as file:
                 data = json.load(file)
@@ -201,13 +199,15 @@ class mini_LiTOY:
                     )
         except KeyboardInterrupt:
             self.p("Exiting due to keyboard interrupt")
-            if self.output_json is sys.stdout:
+            if self.output_json == "stdout":
                 with open(self.recovery_file, 'w', encoding='utf-8') as file:
                     json.dump(self.json_data, file, ensure_ascii=False, indent=4)
                 with sys.stdout as file:
                     json.dump(self.json_data, file, ensure_ascii=False, indent=4)
-                sys.stdout.flush()
-            raise SystemExit("\nExiting. Goodbye!")
+                # sys.stdout.flush()
+                raise SystemExit()
+            else:
+                raise SystemExit("\nExiting. Goodbye!")
 
     @typechecked
     def display_comparison_table(self, entry1: dict, entry2: dict) -> None:
@@ -317,7 +317,7 @@ class mini_LiTOY:
             json.dump(self.json_data, file, ensure_ascii=False, indent=4)
 
         # save to output only at the end if stdout
-        if self.output_json is sys.stdout:
+        if self.output_json == "stdout":
             return
 
         with open(self.output_json, 'w', encoding='utf-8') as file:
