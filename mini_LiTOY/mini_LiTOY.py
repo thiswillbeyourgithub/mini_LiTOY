@@ -335,31 +335,39 @@ try:
         appname="mini_LiTOY",
         version=mini_LiTOY.VERSION,
     )
-    assert Path(log_dir).exists() and Path(log_dir).is_dir()
+    par = Path(log_dir).parent.parent.parent
+    assert par.exists() and par.is_dir()
 except Exception as err:
     try:
         log_dir = user_config_dir(
             appname="mini_LiTOY",
             version=mini_LiTOY.VERSION,
         )
-        assert Path(log_dir).exists() and Path(log_dir).is_dir()
+        par = Path(log_dir).parent.parent.parent
+        assert par.exists() and par.is_dir()
     except Exception as err2:
         raise Exception(erro(f"# Errors when trying to find an appropriate log dir:\n- '{err}'\n- '{err2}'"))
 
 log_dir = Path(log_dir)
-assert Path(log_dir).exists() and Path(log_dir).is_dir(), f"Error with log_dir: '{log_dir}'"
+par = Path(log_dir).parent.parent.parent
+assert par.exists() and par.is_dir()
+log_dir.mkdir(parents=True, exist_ok=True)
 log_file = str((log_dir / "mini_litoy.logs.txt").resolve().absolute())
 
 # Configure logging
 logging.basicConfig(filename=log_file, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 log = logging.getLogger()
 
-cache_dir = user_cache_dir(
-appname="mini_LiTOY",
-version=mini_LiTOY.VERSION,
+cache_dir = Path(
+        user_cache_dir(
+            appname="mini_LiTOY",
+            version=mini_LiTOY.VERSION,
+        )
 )
-assert Path(cache_dir).exists() and Path(cache_dir).is_dir(), f"Error with cache_dir: '{cache_dir}'"
+par = cache_dir.parent.parent
+assert par.exists() and par.is_dir()
 recovery_dir = cache_dir / "recovery"
+recovery_dir.mkdir(parents=True, exist_ok=True)
 
 
 if __name__ == "__main__":
