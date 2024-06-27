@@ -80,7 +80,7 @@ def update_js(
     json_file_to_update: Union[str, PosixPath],
     omnivore_api_key: Optional[str] = None,
     start_date: Union[str, datetime] = "2023-04-01",
-    base_query: str = "in:inbox -type:highlights sort:saved saved:$start_date..$end_date -label:" + DUPLICATE_LABEL,
+    base_query: str = "in:inbox -type:highlights sort:saved saved:$start_date..$end_date -in:archive -label:" + DUPLICATE_LABEL,
     time_window: int = 7,
     ):
     if omnivore_api_key is None:
@@ -144,6 +144,7 @@ def update_js(
     assert len(results) == len(dates), f"Number of results={len(results)} but number of date ranges: {len(dates)}"
 
     present_ids = [article["id"] for article in json_articles]
+    extra_ids = copy.deepcopy(present_ids)
 
     for idate, _dat in tqdm(enumerate(dates), total=len(dates)):
         d1, d2 = _dat
@@ -157,6 +158,8 @@ def update_js(
         for e in edges:
             n = e["node"]
             if n["id"] in present_ids:
+                if n["id"] in extra_ids:
+                    extra_ids.remove(n["id"])
                 continue
             present_ids.append(n["id"])
 
@@ -231,6 +234,20 @@ def update_js(
                 label_ids=dup_lab_id,
             )
 
+    # remove articles that were archived
+    if extra_ids:
+        log.info(f"Found {len(extra_ids)} articles that are in the local file"
+                 "but not in the server output. Removing those ids from the "
+                "local file. Will be removed:")
+        for art_id in extra_ids:
+            article = [art for art in json_articles if art["id"] == art_id]
+            assert len(article ) == 1
+            article = article[0]
+            entry = article["entry"]
+            log.info(f"- {entry}")
+            json_articles.remove(article)
+
+    assert json_articles, "No article left!"
     json.dump(
         json_articles,
         json_file_to_update.open("w"),
