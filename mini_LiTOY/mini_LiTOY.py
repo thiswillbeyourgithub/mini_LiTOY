@@ -75,7 +75,7 @@ class mini_LiTOY:
         # load previous data
         self.lines = []
         if self.output_json and Path(self.output_json).exists():
-            self.p("Loading data from %s", self.output_json)
+            self.p(f"Loading data from {self.output_json}")
             with open(self.output_json, 'r') as file:
                 data = json.load(file)
                 assert isinstance(data, list) and all(isinstance(item, dict) for item in data), "JSON file must be a list of dictionaries"
@@ -348,7 +348,7 @@ class mini_LiTOY:
             json.dump(self.json_data, file, ensure_ascii=False, indent=4)
 
     @typechecked
-    def p(self, message: str, type="info") -> str:
+    def p(self, message: str, type: str = "info") -> str:
         "printer"
         if type == "info":
             log.info(message)
