@@ -177,14 +177,12 @@ def update_js(
                 if n["siteName"] and n["siteName"] not in new["entry"]:
                     new["entry"] += f"\non {n['siteName']}"
             new["metadata"] = {k: n[k] for k in metadata_keys}
-            # don't save labels as dict
-            new["metadata"]["labels"] = ",".join(
-                [
-                    lab["name"]
-                    for lab in labels
-                    if lab["id"] in [l['id'] for l in n["labels"]]
-                ]
-            )
+            # don't save labels as dict but as a list
+            new["metadata"]["labels"] = [
+                lab["name"]
+                for lab in labels
+                if lab["id"] in [l['id'] for l in n["labels"]]
+            ]
             json_articles.append(new)
             n_new += 1
 
