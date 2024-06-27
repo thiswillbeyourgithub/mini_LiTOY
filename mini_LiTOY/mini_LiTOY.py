@@ -97,11 +97,15 @@ class mini_LiTOY:
             max_id = 1
 
         if input_file:
-            self.p(f"Reading input from {input_file if input_file is not sys.stdin else 'stdin'}")
-            with open(input_file, 'r') as file:
-                input_content = file.read()
+            if input_file is sys.stdin:
+                self.p("Reading input from stdin")
+                input_content = input_file.read()
+            else:
+                self.p(f"Reading input from {input_file}")
+                with open(input_file, 'r') as file:
+                    input_content = file.read()
             for line in input_content.splitlines():
-                line = line.stripped()
+                line = line.strip()
                 if (not line) or line.startswith("#"):
                     continue
                 if not any(entry["entry"] == line for entry in self.json_data):
