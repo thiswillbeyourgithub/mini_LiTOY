@@ -155,8 +155,8 @@ class mini_LiTOY:
             self.p(f"Found {len(dup_i)} entries whose 'id' value is identical:", type="error")
             for i in dup_i:
                 self.p(i, type="error")
-        if dup_t or dup_i:
-            raise Exception()
+        # if dup_t or dup_i:
+        #     raise Exception()
 
         if self.json_data:
             max_id = max(

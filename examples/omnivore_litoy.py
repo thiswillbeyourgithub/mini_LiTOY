@@ -248,7 +248,7 @@ def update_js(
             while article in json_articles:
                 json_articles.remove(article)
 
-    # remove articles that were archived
+    # remove articles that were archived since last time
     if extra_ids:
         log.info(f"Found {len(extra_ids)} articles that are in the local file"
                  "but not in the server output. Removing those ids from the "
