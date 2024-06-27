@@ -59,7 +59,7 @@ def label_input(
     color:
     str = "#ff0000",
     description: str = "Label created by mini_litoy/examples/omnivore_litoy.py",
-    ) -> dict:
+    ) -> CreateLabelInput:
     return CreateLabelInput(
         DUPLICATE_LABEL,
         "#ff0000",  # red
