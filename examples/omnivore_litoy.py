@@ -36,21 +36,6 @@ def load_api_key() -> str:
     omnivore_api_key = os.environment["OMNIVORE_API_KEY"]
     return omnivore_api_key
 
-@typechecked
-def generate_dates(dateA: str, dateB: str, days_diff: int) -> List:
-    start_date = datetime.strptime(dateA, "%Y-%m-%d")
-    end_date = datetime.strptime(dateB, "%Y-%m-%d")
-    current_date = start_date
-    dates = []
-    while current_date <= end_date:
-        newdate = [
-                (current_date - relativedelta(days=1)).strftime("%Y-%m-%d"),
-                (current_date + relativedelta(days=days_diff)).strftime("%Y-%m-%d"),
-        ]
-        current_date += relativedelta(days=days_diff)
-        dates.append(newdate)
-    return dates[::-1]
-
 default_dict = {
         "n_comparison": 0,
         "ELO": 100,
@@ -112,10 +97,21 @@ def update_js(
     except Exception as err:
         raise Exception(f"Error when logging to OmnivoreQL then loading labels: '{err}'")
 
+    # generates all date ranges from start_date to today
     d = datetime.today()
-    end_date = f"{d.year}-{d.month}-{d.day}"
-
-    dates = generate_dates(start_date, end_date, time_window)
+    end_date = f"{d.year}-{d.month}-{d.day}"  + relativedelta(days=1)
+    start_date = datetime.strptime(start_date, "%Y-%m-%d")
+    end_date = datetime.strptime(end_date, "%Y-%m-%d")
+    current_date = start_date
+    dates = []
+    while current_date <= end_date:
+        newdate = [
+                (current_date - relativedelta(days=1)).strftime("%Y-%m-%d"),
+                (current_date + relativedelta(days=days_diff)).strftime("%Y-%m-%d"),
+        ]
+        current_date += relativedelta(days=days_diff)
+        dates.append(newdate)
+    dates = dates[::-1]
 
     json_file_to_update =  Path(json_file_to_update)
     if json_file_to_update.exists():
