@@ -346,7 +346,7 @@ class mini_LiTOY:
         assert expected_score1 < 1 and expected_score1 > 0
         expected_score2 = 1 - expected_score1
 
-        actual_score1 = answer / 5
+        actual_score1 = (5 - answer) / 5
         actual_score2 = 1 - actual_score1
 
         new_elo1 = elo1 + k1 * (actual_score1 - expected_score1)
