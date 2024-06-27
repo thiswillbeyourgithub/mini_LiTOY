@@ -18,10 +18,6 @@ from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.keys import Keys
 from prompt_toolkit.shortcuts import clear
 
-original_stdin = sys.stdin
-
-if not original_stdin.isatty():
-    stdin_content = sys.stdin.read()
 
 class mini_LiTOY:
     VERSION: str = "0.1.0"
@@ -40,7 +36,7 @@ class mini_LiTOY:
         Parameters
         ----------
 
-        :param input_file: Path a txt file, parsed as one entry per line, ignoring empty lines and those starting with #. If "stdin", will read from stdin.
+        :param input_file: Path a txt file, parsed as one entry per line, ignoring empty lines and those starting with #.
         :param output_json: Path the json file that will be updated as ELOs get updated.
         :param callback: Callable, will be called just after updating the json file. This is intended for use when imported. See examples folder.
         :param verbose: bool, increase verbosity
@@ -58,9 +54,6 @@ class mini_LiTOY:
         if not output_json:
             log.error("output_json must be provided")
             raise ValueError("output_json must be provided")
-
-        if input_file == "stdin":
-            input_file = sys.stdin
 
         self.output_json = output_json
         self.callback = callback
@@ -100,13 +93,9 @@ class mini_LiTOY:
             max_id = 1
 
         if input_file:
-            if input_file is sys.stdin:
-                self.p("Reading input from stdin")
-                input_content = stdin_content
-            else:
-                self.p(f"Reading input from {input_file}")
-                with open(input_file, 'r') as file:
-                    input_content = file.read()
+            self.p(f"Reading input from {input_file}")
+            with open(input_file, 'r') as file:
+                input_content = file.read()
             for line in input_content.splitlines():
                 line = line.strip()
                 if (not line) or line.startswith("#"):
@@ -162,8 +151,6 @@ class mini_LiTOY:
                     elif key in 'azert':
                         key = str('azert'.index(key) + 1)
                     event.app.exit(result=key)
-
-
 
                 answer = prompt(f"{self.question} (1-5 or a-z-e-r-t and s or ' ' to skip): ", key_bindings=bindings)
                 self.p(f"User selected answer: '{answer}'")
