@@ -22,7 +22,7 @@ from prompt_toolkit.shortcuts import clear
 class mini_LiTOY:
     VERSION: str = "0.1.1"
     inertia_values = [30, 25, 20, 15, 10]
-    question = "What's the relative importance of those items to you?'"
+    questions = ["What's the relative importance of those items to you?'"]
     ELO_norm = 40
     ELO_default = 100
 
@@ -67,7 +67,7 @@ class mini_LiTOY:
             with open(self.output_json, 'r') as file:
                 data = json.load(file)
                 assert isinstance(data, list) and all(isinstance(item, dict) for item in data), "JSON file must be a list of dictionaries"
-            self.json_data = data
+            self.json_data = [LockedDict(di) for di in data]
         else:
             self.json_data = []
 
@@ -75,12 +75,24 @@ class mini_LiTOY:
         for entry in self.json_data:
             for k in entry.keys():
                 assert k in [
-                    "entry","n_comparison", "ELO", "id", "metadata",
+                    "entry","g_n_comparison", "g_ELO", "all_ELO", "id", "metadata",
                 ], f"Unexpected key {k} in this entry:\n{entry}"
-            for k in ["entry","n_comparison", "ELO", "id", "metadata"]:
+            for k in ["entry","g_n_comparison", "g_ELO", "all_ELO", "id", "metadata"]:
                 assert k in entry.keys(), (
                     f"Entry missing key {k}:\n{entry}"
                 )
+            for q, d in entry["all_ELO"]:
+                assert isinstance(d, dict)
+                entry["all_ELO"][q] = LockedDict(d)
+                assert isinstance(d, LockedDict)
+                assert isinstance(q, str), f"questions in entry['all_ELO'] must be strings not {type(q)} '({q})'"
+                assert all(dd in ["q_n_comparison", "qELO"] for dd in  d.keys()), f"Invalid entry['all_ELO']: {q}:{d}"
+                assert all(k in d.keys() for k in ["q_n_comparison", "qELO"]), f"Invalid entry['all_ELO']: {q}:{d}"
+
+            for q in entry["all_ELO"].keys():
+                assert q in self.questions, f"Entry contains a question that is not part of self.questions: '{q}'"
+            for q in self.questions:
+                assert q in entry["all_ELO"].keys(), f"A question from self.questions is not part of all_ELO keys: '{q}'"
 
         if self.json_data:
             max_id = max(
@@ -104,13 +116,19 @@ class mini_LiTOY:
                     continue
                 if not any(entry["entry"] == line for entry in self.json_data):
                     max_id += 1
-                    entry = {
+                    entry = LockedDict({
                         "entry": line,
-                        "n_comparison": 0,
-                        "ELO": self.ELO_default,  # Sensible default ELO
+                        "g_n_comparison": 0,
+                        "g_ELO": self.ELO_default,
+                        "all_ELO": {
+                            q: LockedDict({
+                                "q_n_comparison": 0,
+                                "q_ELO": self.ELO_default
+                            } for q in self.questions
+                        }),
                         "id": max_id,
                         "metadata": {},
-                    }
+                    })
                     self.json_data.append(entry)
 
         self.console = Console()
@@ -120,59 +138,75 @@ class mini_LiTOY:
     @typechecked
     def run_comparison_loop(self) -> None:
         counter = 0
-        try:
-            while True:
-                clear()
-                self.p("Picking two entries for comparison")
-                entry1, entry2 = self.pick_two_entries()
-                self.p(f"Displaying comparison table for entries {entry1['id']} and {entry2['id']}")
-                self.display_comparison_table(entry1, entry2)
-                bindings = KeyBindings()
+        while True:
+            clear()
+            self.p("Picking two entries for comparison")
+            entry1, entry2 = self.pick_two_entries()
+            self.p(f"Displaying comparison table for entries {entry1['id']} and {entry2['id']}")
+            self.display_comparison_table(entry1, entry2)
+            bindings = KeyBindings()
 
-                self.skip = False
+            self.skip = False
 
-                @bindings.add(Keys.Enter)
-                @bindings.add(' ')
-                @bindings.add('s')
-                @bindings.add('1')
-                @bindings.add('2')
-                @bindings.add('3')
-                @bindings.add('4')
-                @bindings.add('5')
-                @bindings.add('a')
-                @bindings.add('z')
-                @bindings.add('e')
-                @bindings.add('r')
-                @bindings.add('t')
-                def _(event):
-                    key = event.key_sequence[0].key
-                    if key is Keys.Enter:
-                        key = event.app.current_buffer.text.strip()
-                    if key == "s" or key == " ":
-                        self.skip = True
-                    elif key in 'azert':
-                        key = str('azert'.index(key) + 1)
-                    event.app.exit(result=key)
+            @bindings.add(Keys.Enter)
+            @bindings.add(' ')
+            @bindings.add('s')
+            @bindings.add('1')
+            @bindings.add('2')
+            @bindings.add('3')
+            @bindings.add('4')
+            @bindings.add('5')
+            @bindings.add('a')
+            @bindings.add('z')
+            @bindings.add('e')
+            @bindings.add('r')
+            @bindings.add('t')
+            def _(event):
+                key = event.key_sequence[0].key
+                if key is Keys.Enter:
+                    key = event.app.current_buffer.text.strip()
+                if key == "s" or key == " ":
+                    self.skip = True
+                elif key in 'azert':
+                    key = str('azert'.index(key) + 1)
+                event.app.exit(result=key)
 
-                answer = prompt(f"{self.question} (1-5 or a-z-e-r-t and s or ' ' to skip): ", key_bindings=bindings)
-                self.p(f"User selected answer: '{answer}'")
+            answers = {}
+            for iq, q in enumerate(self.questions):
+                if len(self.questions) > 1:
+                    prefix = f"[{iq+1}/{len(questions)+1}] "
+                else:
+                    prefix = ""
+
+                try:
+                    answers[q] = prompt(f"{prefix}{q} (1-5 or a-z-e-r-t and s or ' ' to skip): ", key_bindings=bindings)
+                except (KeyboardInterrupt, EOFError):
+                    self.p("Exiting due to keyboard interrupt")
+                    raise SystemExit("\nExiting. Goodbye!")
+
+                self.p(f"User selected answer: '{answers[q]}'")
                 if self.skip:
                     self.p("Skipping this comparison")
                     continue
-                assert answer.isdigit(), f"Answer should be an int: '{answer}'"
-                answer = int(answer)
+                assert answers[q].isdigit(), f"Answer should be an int"
+                answers[q] = int(ansers[q])
 
-                n_comparison_1 = entry1["n_comparison"]
+                n_comparison_1 = entry1["all_ELO"][q]["q_n_comparison"]
                 K1 = self.inertia_values[n_comparison_1] if n_comparison_1 <= len(self.inertia_values) else self.inertia_values[-1]
-                n_comparison_2 = entry2["n_comparison"]
+                n_comparison_2 = entry2["all_ELO"][q]["q_n_comparison"]
                 K2 = self.inertia_values[n_comparison_2] if n_comparison_2 <= len(self.inertia_values) else self.inertia_values[-1]
 
-                new_elo1, new_elo2 = self.update_elo(answer, entry1["ELO"], entry2["ELO"], K1, K2)
-                entry1["ELO"], entry2["ELO"] = new_elo1, new_elo2
-                self.p("Updated ELOs: entry1=%d, entry2=%d", new_elo1, new_elo2)
+                new_elo1, new_elo2 = self.update_elo(answers[q], entry1["all_ELO"][q]["q_ELO"], entry2["all_ELO"][q]["q_ELO"], K1, K2)
+                entry1["all_ELO"][q]["ELO"], entry2["all_ELO"][q]["ELO"] = new_elo1, new_elo2
+                self.p(f"Updated ELOs: entry1={new_elo1}, entry2={new_elo2}")
 
-                entry1["n_comparison"] += 1
-                entry2["n_comparison"] += 1
+                entry1["all_ELO"][q]["q_n_comparison"] += 1
+                entry2["all_ELO"][q]["q_n_comparison"] += 1
+
+                entry1["g_ELO"] = sum([entry1["all_ELO"][_q]["q_ELO"] for _q in entry1["all_ELO"].keys()])
+                entry2["g_ELO"] = sum([entry2["all_ELO"][_q]["q_ELO"] for _q in entry2["all_ELO"].keys()])
+                entry1["g_n_comparison"] = sum([entry1["all_ELO"][_q]["q_n_comparison"] for _q in entry1["all_ELO"].keys()])
+                entry2["g_n_comparison"] = sum([entry2["all_ELO"][_q]["q_n_comparison"] for _q in entry2["all_ELO"].keys()])
 
                 assert entry1 in self.json_data and entry2 in self.json_data
 
@@ -188,12 +222,9 @@ class mini_LiTOY:
                         entry1,
                         entry2,
                     )
-        except (KeyboardInterrupt, EOFError):
-            self.p("Exiting due to keyboard interrupt")
-            raise SystemExit("\nExiting. Goodbye!")
 
     @typechecked
-    def display_comparison_table(self, entry1: dict, entry2: dict) -> None:
+    def display_comparison_table(self, entry1: LockedDict, entry2: LockedDict) -> None:
         terminal_width = os.get_terminal_size().columns
 
         table = Table(title="Comparison", width=terminal_width)
@@ -206,8 +237,10 @@ class mini_LiTOY:
         table.add_row("[bold]Content", "[bold]" + str(entry1["entry"]), "[bold]" + str(entry2["entry"]))
         table.add_row("", "", "")
         table.add_row("", "", "")
-        table.add_row("[bold]Nb compar", str(entry1["n_comparison"]), str(entry2["n_comparison"]))
-        table.add_row("[bold]ELO", str(entry1["ELO"]), str(entry2["ELO"]))
+        table.add_row("[bold]Nb compar", str(entry1["g_n_comparison"]), str(entry2["g_n_comparison"]))
+        table.add_row("[bold]Global ELO", str(entry1["g_ELO"]), str(entry2["g_ELO"]))
+        for q in self.questions:
+            table.add_row(f"[bold]{q[:10]}...", str(entry1["all_ELO"][q]["q_ELO"]), str(entry2["all_ELO"][q]["q_ELO"]))
 
         metadata_keys = []
         if entry1["metadata"]:
@@ -265,11 +298,11 @@ class mini_LiTOY:
         return round(new_elo1), round(new_elo2)
 
     @typechecked
-    def pick_two_entries(self) -> tuple[dict, dict]:
+    def pick_two_entries(self) -> tuple[LockedDict, LockedDict]:
         """
         Pick three entries at random, then return the first of the three and the one with the lowest n_comparison between the other two.
 
-        :return: tuple, two entries as dictionaries
+        :return: tuple, two entries as LockedDict
         """
         import random
 
@@ -367,6 +400,16 @@ par = cache_dir.parent.parent
 assert par.exists() and par.is_dir()
 recovery_dir = cache_dir / "recovery"
 recovery_dir.mkdir(parents=True, exist_ok=True)
+
+class LockedDict(dict):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._locked = True
+
+    def __setitem__(self, key, value):
+        if self._locked and key not in self:
+            raise KeyError(f"Cannot create new key '{key}'. Only existing keys can be modified.")
+        super().__setitem__(key, value)
 
 
 if __name__ == "__main__":
