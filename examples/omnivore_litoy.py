@@ -129,8 +129,6 @@ def update_js(
     assert isinstance(json_articles, list), "loaded json is not a list"
     assert all(isinstance(article, dict) for article in json_articles), "loaded json is not a list of dict"
 
-    present_ids = [article["id"] for article in json_articles]
-
     # execute async queries
     pbar = tqdm(total=len(dates), desc="Querying", unit="date_ranges")
     async def main():
@@ -154,6 +152,8 @@ def update_js(
 
     assert len(results) == len(dates), f"Number of results={len(results)} but number of date ranges: {len(dates)}"
 
+    present_ids = [article["id"] for article in json_articles]
+
     for idate, _dat in tqdm(enumerate(dates), total=len(dates)):
         d1, d2 = _dat
         d = results[idate]
@@ -167,6 +167,7 @@ def update_js(
             n = e["node"]
             if n["id"] in present_ids:
                 continue
+            present_ids.append(n["id"])
 
             new = default_dict.copy()
             new["id"] = n["id"]
