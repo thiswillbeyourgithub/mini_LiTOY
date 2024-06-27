@@ -34,9 +34,13 @@ def _load_api_key() -> str:
     return omnivore_api_key
 
 default_dict = {
-        "n_comparison": 0,
-        "ELO": mini_LiTOY.ELO_default,
-        "metadata": {},
+    "entry": None,
+    "id": None,
+    "metadata": {},
+
+    "g_n_comparison": 0,
+    "g_ELO": mini_LiTOY.ELO_default,
+    "all_ELO": {},
 }
 metadata_keys = [
     "description",
