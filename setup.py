@@ -25,7 +25,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'mini_LiTOY=mini_LiTOY.__init__:cli_launcher',
+            'mlitoy=mini_LiTOY.__init__:cli_launcher',
         ],
     },
 
