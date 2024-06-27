@@ -199,7 +199,7 @@ class mini_LiTOY:
                         entry1,
                         entry2,
                     )
-        except KeyboardInterrupt:
+        except (KeyboardInterrupt, EOFError):
             self.p("Exiting due to keyboard interrupt")
             if self.output_json == "stdout":
                 with open(self.recovery_file, 'w', encoding='utf-8') as file:
