@@ -56,14 +56,13 @@ metadata_keys = [
 @typechecked
 def label_input(
     name: str,
-    color:
-    str = "#ff0000",
+    color: str = "#ff0000",  # red
     description: str = "Label created by mini_litoy/examples/omnivore_litoy.py",
     ) -> CreateLabelInput:
     return CreateLabelInput(
-        DUPLICATE_LABEL,
-        "#ff0000",  # red
-        "Label created by mini_litoy/examples/omnivore_litoy.py"
+        name,
+        color,
+        description,
     )
 
 @typechecked
