@@ -241,14 +241,13 @@ def update_js(
                 label_ids=dup_lab_id,
             )
 
-
     json.dump(
         json_articles,
         json_file_to_update.open("w"),
         ensure_ascii=False,
         indent=2,
     )
-    tqdm.write(f"Done updating {json_file_to_update}!")
+    print(f"Done updating {json_file_to_update}!")
 
 @typechecked
 def review(
