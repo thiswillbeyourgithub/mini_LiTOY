@@ -446,7 +446,7 @@ log_dir.mkdir(parents=True, exist_ok=True)
 log_file = str((log_dir / "mini_litoy.logs.txt").resolve().absolute())
 
 # Configure logging
-logging.basicConfig(filename=log_file, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename=log_file, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 log = logging.getLogger()
 
 cache_dir = Path(
