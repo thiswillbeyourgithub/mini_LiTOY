@@ -17,6 +17,7 @@ from rich.table import Table
 from prompt_toolkit import prompt
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.keys import Keys
+from prompt_toolkit.shortcuts import clear
 
 
 class LockedDict(dict):
@@ -193,6 +194,7 @@ class mini_LiTOY:
     def run_comparison_loop(self) -> None:
         counter = 0
         while True:
+            clear()
             self.p("Picking two entries for comparison")
             entry1, entry2 = self.pick_two_entries()
             assert entry1 in self.json_data and entry2 in self.json_data
