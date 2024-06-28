@@ -194,7 +194,8 @@ class mini_LiTOY:
     def run_comparison_loop(self) -> None:
         counter = 0
         while True:
-            clear()
+            if not self.verbose:
+                clear()  # clearing screen seems to hide the debug prints
             self.p("Picking two entries for comparison")
             entry1, entry2 = self.pick_two_entries()
             assert entry1 in self.json_data and entry2 in self.json_data
