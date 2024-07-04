@@ -7,10 +7,10 @@ Minimalist approach to the [LiTOY task sorting algorithm](https://github.com/thi
 * Made to be extensible
 * Supports callbacks
 
-# Questions
+# FAQ
 
 ### What is LiTOY?
-[LiTOY](https://github.com/thiswillbeyourgithub/LiTOY-aka-List-that-Outlives-You) was a personal project. The idea is to dump all your TODOs in one place, then rank them using ELO scores based on how important they are and of how fast they are.
+[LiTOY](https://github.com/thiswillbeyourgithub/LiTOY-aka-List-that-Outlives-You) was a personal project. The idea is to dump all your TODOs in one place, then rank them using the mean ELO scores of question answer. The default questions are `Which is more important to you?` and `Which takes the less time?` but you can use anything you like instead!
 
 ### Why make mini_LiTOY?
 mini_LiTOY's idea is to keep the code idea but this time in a minimalist python script. As long as the user takes care of storing the tasks in a text files, the LiTOY algorithm will update an output json based on the score. The first use for this will be to rank my [Omnivore](https://github.com/omnivore-app/omnivore) reading queue by downloading titles of articles to read via their API, then uploading the ELO score as a label. This can be found in the examples folder.
