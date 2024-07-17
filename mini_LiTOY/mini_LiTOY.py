@@ -38,7 +38,7 @@ class LockedDict(dict):
 
 
 class mini_LiTOY:
-    VERSION: str = "0.1.2"
+    VERSION: str = "0.1.3"
     inertia_values = [30, 25, 20, 15, 10]
     questions = [
         "Which is more important to you?'",
