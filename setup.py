@@ -35,6 +35,7 @@ setup(
         "rich>=13.7.1",
         "prompt-toolkit>=3.0.40",
         "platformdirs >= 4.2.2",
+        "rtoml >= 0.11.0",
     ],
 
 )

@@ -18,6 +18,7 @@ from prompt_toolkit import prompt
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.keys import Keys
 from prompt_toolkit.shortcuts import clear
+import rtoml as toml
 
 
 class LockedDict(dict):
@@ -70,7 +71,7 @@ class mini_LiTOY:
     def __init__(
         self,
         input_file: Optional[Union[PosixPath, str, io.TextIOWrapper]] = None,
-        output_json: Optional[Union[PosixPath, str, io.TextIOWrapper]] = None,
+        output_file: Optional[Union[PosixPath, str, io.TextIOWrapper]] = None,
         callback: Optional[Callable] = None,
         verbose: bool = False,
         ):
@@ -79,40 +80,48 @@ class mini_LiTOY:
         ----------
 
         :param input_file: Path a txt file, parsed as one entry per line, ignoring empty lines and those starting with #.
-        :param output_json: Path the json file that will be updated as ELOs get updated.
+        :param output_file: Path the file file that will be updated as ELOs get updated.
         :param callback: Callable, will be called just after updating the json file. This is intended for use when imported. See examples folder.
         :param verbose: bool, increase verbosity
         """
         self.verbose = verbose
         self.p(f"Logdir: {log_dir}")
         self.p(f"recovery_dir: {recovery_dir}")
-        self.p(f"Initializing mini_LiTOY with input_file={input_file}, output_json={output_json}")
+        self.p(f"Initializing mini_LiTOY with input_file={input_file}, output_file={output_file}")
         self.recovery_file = recovery_dir / str(int(time.time()))
 
-        if not input_file and not output_json:
-            log.error("Either input_file or output_json must be provided")
-            raise ValueError("Either input_file or output_json must be provided")
+        if not input_file and not output_file:
+            log.error("Either input_file or output_file must be provided")
+            raise ValueError("Either input_file or output_file must be provided")
 
-        if not output_json:
-            log.error("output_json must be provided")
-            raise ValueError("output_json must be provided")
+        if not output_file:
+            log.error("output_file must be provided")
+            raise ValueError("output_file must be provided")
+        output_format = Path(output_file).suffix
+        assert output_format in ["json", "toml"], f"output_file extension must be 'json' or 'toml' not '{output_format}'"
 
-        self.output_json = output_json
+        self.output_file = output_file
         self.callback = callback
+        self.output_format = output_format
 
         # load previous data
         self.lines = []
-        if self.output_json and Path(self.output_json).exists():
-            self.p(f"Loading data from {self.output_json}")
+        if self.output_file and Path(self.output_file).exists():
+            self.p(f"Loading data from {self.output_file}")
             with open(self.output_json, 'r') as file:
-                data = json.load(file)
-                assert isinstance(data, list) and all(isinstance(item, dict) for item in data), "JSON file must be a list of dictionaries"
-            self.json_data = [self.LockedDict(di) for di in data]
+                if output_format == "json":
+                    data = json.load(file)
+                elif output_format == "toml":
+                    data = toml.load(file)
+                else:
+                    raise ValueError(f"output_format must be 'json' or 'toml', not '{output_format}'")
+                assert isinstance(data, list) and all(isinstance(item, dict) for item in data), "Output file must be a list of dictionaries"
+            self.alldata = [self.LockedDict(di) for di in data]
         else:
-            self.json_data = []
+            self.alldata = []
 
         # check validity of data
-        for ie, entry in enumerate(self.json_data):
+        for ie, entry in enumerate(self.alldata):
             for k in entry.keys():
                 assert k in [
                     "entry","g_n_comparison", "g_ELO", "all_ELO", "id", "metadata",
@@ -141,8 +150,8 @@ class mini_LiTOY:
                 assert q in self.questions, f"Entry #{ie} contains a question that is not part of self.questions: '{q}'"
 
         # check no entries have the same name or id
-        texts = [ent["entry"] for ent in self.json_data]
-        ids = [ent["id"] for ent in self.json_data]
+        texts = [ent["entry"] for ent in self.alldata]
+        ids = [ent["id"] for ent in self.alldata]
         dup_t = set()
         dup_i = set()
         for t in texts:
@@ -162,13 +171,13 @@ class mini_LiTOY:
         # if dup_t or dup_i:
         #     raise Exception()
 
-        if self.json_data:
+        if self.alldata:
             max_id = max(
                 [
                     int(item["id"])
                     if str(item["id"]).isdigit()
                     else it
-                    for it, item in enumerate(self.json_data)
+                    for it, item in enumerate(self.alldata)
                 ]
             )
         else:
@@ -182,12 +191,12 @@ class mini_LiTOY:
                 line = line.strip()
                 if (not line) or line.startswith("#"):
                     continue
-                if not any(entry["entry"] == line for entry in self.json_data):
+                if not any(entry["entry"] == line for entry in self.alldata):
                     max_id += 1
                     entry = copy(self.default_dict)
                     entry["entry"] = line
                     entry["id"] = max_id
-                    self.json_data.append(entry)
+                    self.alldata.append(entry)
 
         self.console = Console()
         self.p("Starting comparison loop")
@@ -201,7 +210,7 @@ class mini_LiTOY:
                 clear()  # clearing screen seems to hide the debug prints
             self.p("Picking two entries for comparison")
             entry1, entry2 = self.pick_two_entries()
-            assert entry1 in self.json_data and entry2 in self.json_data
+            assert entry1 in self.alldata and entry2 in self.alldata
             self.p(f"Displaying comparison table for entries {entry1['id']} and {entry2['id']}")
             self.display_comparison_table(entry1, entry2)
             bindings = KeyBindings()
@@ -268,10 +277,10 @@ class mini_LiTOY:
                 entry1["g_n_comparison"] = sum([entry1["all_ELO"][_q]["q_n_comparison"] for _q in entry1["all_ELO"].keys()])
                 entry2["g_n_comparison"] = sum([entry2["all_ELO"][_q]["q_n_comparison"] for _q in entry2["all_ELO"].keys()])
 
-                assert entry1 in self.json_data and entry2 in self.json_data
+                assert entry1 in self.alldata and entry2 in self.alldata
 
-                self.store_json_data()
-                self.p("Stored JSON data")
+                self.store_data()
+                self.p("Stored data to file")
 
                 counter += 1
 
@@ -367,35 +376,45 @@ class mini_LiTOY:
         """
         import random
 
-        if len(self.json_data) < 5:
+        if len(self.alldata) < 5:
             raise ValueError("You need at least 5 entries to start comparing")
 
-        entries_nb = random.sample(range(len(self.json_data)), 3)
+        entries_nb = random.sample(range(len(self.alldata)), 3)
 
-        entry1 = self.json_data[entries_nb[0]]
-        entry2 = self.json_data[entries_nb[1]]
-        entry3 = self.json_data[entries_nb[2]]
+        entry1 = self.alldata[entries_nb[0]]
+        entry2 = self.alldata[entries_nb[1]]
+        entry3 = self.alldata[entries_nb[2]]
 
         assert entry2 != entry1 and entry3 != entry1
-        assert all(entr in self.json_data for entr in [entry1, entry2, entry3])
+        assert all(entr in self.alldata for entr in [entry1, entry2, entry3])
         if entry2["g_n_comparison"] <= entry3["g_n_comparison"]:
             return entry1, entry2
         else:
             return entry1, entry3
 
     @typechecked
-    def store_json_data(self) -> None:
-        if not hasattr(self, 'output_json') or not self.output_json:
-            raise AttributeError("Missing attribute: 'output_json'")
-        if not hasattr(self, 'json_data') or not isinstance(self.json_data, list):
-            raise AttributeError("Missing or invalid attribute: 'json_data'")
+    def store_data(self) -> None:
+        if not hasattr(self, 'output_file') or not self.output_file:
+            raise AttributeError("Missing attribute: 'output_file'")
+        if not hasattr(self, 'alldata') or not isinstance(self.alldata, list):
+            raise AttributeError("Missing or invalid attribute: 'alldata'")
 
         # always save to recovery file
         with open(self.recovery_file, 'w', encoding='utf-8') as file:
-            json.dump(self.json_data, file, ensure_ascii=False, indent=4)
+            if self.output_format == "json":
+                json.dump(self.alldata, file, ensure_ascii=False, indent=4)
+            elif self.output_format == "toml":
+                toml.dump(self.alldata, file, pretty=True)
+            else:
+                raise ValueError(self.output_format)
 
         with open(self.output_json, 'w', encoding='utf-8') as file:
-            json.dump(self.json_data, file, ensure_ascii=False, indent=4)
+            if self.output_format == "json":
+                json.dump(self.alldata, file, ensure_ascii=False, indent=4)
+            elif self.output_format == "toml":
+                toml.dump(self.alldata, file, pretty=True)
+            else:
+                raise ValueError(self.output_format)
 
     @typechecked
     def p(self, message: str, type: str = "info") -> str:
