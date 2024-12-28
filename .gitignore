@@ -2,6 +2,7 @@
 **/*egg-info*
 **/*logs.txt
 dist
+build
 
 examples/*.json
 
