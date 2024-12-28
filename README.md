@@ -1,4 +1,4 @@
-# mini_LiTOY.md
+# mini_LiTOY
 Minimalist approach to the [LiTOY task sorting algorithm](https://github.com/thiswillbeyourgithub/LiTOY-aka-List-that-Outlives-You) based on [ELO scores](https://en.wikipedia.org/wiki/Elo_rating_system).
 
 # Features
