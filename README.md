@@ -17,7 +17,7 @@ mini_LiTOY's idea is to keep the code idea but this time in a minimalist python 
 
 # Usage
 * `python -m pip install mini_LiTOY` or `python -m pip install git+https://github.com/thiswillbeyourgithub/mini_LiTOY.git`
-* Then you can either launch it with `python -m mini_LiTOY [ARGS]` or `mlitoy [ARGS]`
+* Then you can either launch it with `python -m mini_LiTOY [ARGS]` or use the alias  `mlitoy [ARGS]`
 * `mlitoy --input_file my_text_file.txt --output_path output_file.json`
 ## Notes
 * each new (nonempty nor commented) line in input_file will be added to the input_file.json with the default values. Each answer from the user will update the json file.
