@@ -1,6 +1,7 @@
 **/*pycache*
 **/*egg-info*
 **/*logs.txt
+dist
 
 examples/*.json
 
