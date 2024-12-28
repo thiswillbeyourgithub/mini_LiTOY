@@ -7,7 +7,7 @@ with open("README.md", "r") as readme:
 
 setup(
     name="mini_LiTOY",
-    version="0.1.4",
+    version="0.1.5",
     description=" Minimalist LiTOY task sorting algorithm based on ELO scores",
     long_description=long_description,
     long_description_content_type="text/markdown",
