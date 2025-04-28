@@ -35,6 +35,12 @@ class LockedDict(dict):
     def __deepcopy__(self, memo):
         new_instance = LockedDict(self)
         assert id(new_instance) != id(self)
+        # Use copy.deepcopy to ensure nested structures are also copied deeply
+        new_instance = LockedDict()
+        new_instance._locked = False # Temporarily unlock to populate
+        for k, v in self.items():
+            new_instance[k] = copy.deepcopy(v, memo)
+        new_instance._locked = True # Re-lock
         return new_instance
 
 
@@ -98,7 +104,8 @@ class mini_LiTOY:
         if not output_file:
             log.error("output_file must be provided")
             raise ValueError("output_file must be provided")
-        output_format = Path(output_file).suffix
+        # Get suffix without the leading dot
+        output_format = Path(output_file).suffix[1:]
         assert output_format in ["json", "toml"], f"output_file extension must be 'json' or 'toml' not '{output_format}'"
 
         self.output_file = output_file
