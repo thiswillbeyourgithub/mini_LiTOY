@@ -70,7 +70,7 @@ def existing_output_toml_file(tmp_path, sample_entry_text):
     # Wrap the list in a dictionary for TOML structure
     data_wrapper = {"entries": data}
     with open(output_file, 'w') as f:
-        toml.dump(data_wrapper, f, pretty=True)
+        rtoml.dump(data_wrapper, f, pretty=True) # Use rtoml here
     return output_file
 
 
