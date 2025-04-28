@@ -19,6 +19,7 @@ from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.keys import Keys
 from prompt_toolkit.shortcuts import clear
 import rtoml as toml
+import uuid6
 
 
 class LockedDict(dict):
@@ -169,19 +170,8 @@ class mini_LiTOY:
             for i in dup_i:
                 self.p(i, type="error")
         if dup_t or dup_i:
+            # UUID6 collisions are extremely unlikely, but we raise an error just in case.
             raise Exception(f"Found duplicate texts: '{dup_t}' (ids: '{dup_i}'")
-
-        if self.alldata:
-            max_id = max(
-                [
-                    int(item["id"])
-                    if str(item["id"]).isdigit()
-                    else it
-                    for it, item in enumerate(self.alldata)
-                ]
-            )
-        else:
-            max_id = 1
 
         if input_file:
             self.p(f"Reading input from {input_file}")
@@ -191,11 +181,13 @@ class mini_LiTOY:
                 line = line.strip()
                 if (not line) or line.startswith("#"):
                     continue
+                # Check if an entry with the same text already exists
                 if not any(entry["entry"] == line for entry in self.alldata):
-                    max_id += 1
+                    # Create a new entry if it doesn't exist
                     entry = copy.deepcopy(self.default_dict)
                     entry["entry"] = line
-                    entry["id"] = max_id
+                    # Generate a new UUID6 for the id
+                    entry["id"] = str(uuid6.uuid6())
                     self.alldata.append(entry)
 
         self.console = Console()
