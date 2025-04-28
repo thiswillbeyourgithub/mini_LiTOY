@@ -4,7 +4,7 @@ import toml
 import uuid6
 import copy
 from pathlib import Path
-from mini_LiTOY.mini_LiTOY import mini_LiTOY, LockedDict
+from mini_LiTOY.mini_LiTOY import mini_LiTOY, LockedDict, recovery_dir
 
 # Fixtures
 @pytest.fixture
@@ -214,7 +214,7 @@ def test_store_data_json(tmp_path):
     assert loaded_data[1]["entry"] == "Test Entry 2"
     assert loaded_data[0]["id"] == entry1["id"]
     # Check recovery file also exists
-    assert len(list(instance.recovery_dir.glob("*"))) == 1
+    assert len(list(recovery_dir.glob("*"))) == 1
 
 def test_store_data_toml(tmp_path):
     """Test storing data to a TOML file."""
@@ -237,7 +237,7 @@ def test_store_data_toml(tmp_path):
     assert loaded_data[0]["entry"] == "Test Entry 1 TOML"
     assert loaded_data[0]["id"] == entry1["id"]
     # Check recovery file also exists
-    assert len(list(instance.recovery_dir.glob("*"))) == 1
+    assert len(list(recovery_dir.glob("*"))) == 1
 
 # TODO: Add tests for pick_two_entries (might need mocking random)
 # TODO: Add tests for run_comparison_loop (needs mocking prompt_toolkit and potentially callback)

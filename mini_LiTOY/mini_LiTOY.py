@@ -398,20 +398,44 @@ class mini_LiTOY:
         if not hasattr(self, 'alldata') or not isinstance(self.alldata, list):
             raise AttributeError("Missing or invalid attribute: 'alldata'")
 
+        # Convert LockedDict to dict for serialization if needed
+        data_to_dump = self.alldata
+        if self.output_format == "toml":
+            # rtoml cannot serialize subclasses of dict, convert to plain dict
+            data_to_dump = [dict(item) for item in self.alldata]
+            # Deep conversion might be needed if LockedDict contains nested LockedDicts,
+            # but current structure seems flat enough for this shallow conversion.
+            # Let's double-check the structure: alldata is List[LockedDict],
+            # where LockedDict contains basic types and 'all_ELO' which is Dict[str, LockedDict].
+            # So, a deeper conversion is needed for TOML.
+            def deep_convert_to_dict(obj):
+                if isinstance(obj, LockedDict):
+                    return {k: deep_convert_to_dict(v) for k, v in obj.items()}
+                elif isinstance(obj, dict): # Handle regular dicts within LockedDict too
+                    return {k: deep_convert_to_dict(v) for k, v in obj.items()}
+                elif isinstance(obj, list):
+                    return [deep_convert_to_dict(elem) for elem in obj]
+                else:
+                    return obj
+            data_to_dump = [deep_convert_to_dict(item) for item in self.alldata]
+
+
         # always save to recovery file
         with open(self.recovery_file, 'w', encoding='utf-8') as file:
             if self.output_format == "json":
+                # json handles dict subclasses fine
                 json.dump(self.alldata, file, ensure_ascii=False, indent=4)
             elif self.output_format == "toml":
-                toml.dump(self.alldata, file, pretty=True)
+                toml.dump(data_to_dump, file, pretty=True)
             else:
                 raise ValueError(self.output_format)
 
+        # save to main output file
         with open(self.output_file, 'w', encoding='utf-8') as file:
             if self.output_format == "json":
                 json.dump(self.alldata, file, ensure_ascii=False, indent=4)
             elif self.output_format == "toml":
-                toml.dump(self.alldata, file, pretty=True)
+                toml.dump(data_to_dump, file, pretty=True)
             else:
                 raise ValueError(self.output_format)
 
