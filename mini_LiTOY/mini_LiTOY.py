@@ -279,9 +279,6 @@ class mini_LiTOY:
 
                 assert entry1 in self.alldata and entry2 in self.alldata
 
-                self.store_data()
-                self.p("Stored data to file")
-
                 counter += 1
 
                 if self.callback is not None:
@@ -291,6 +288,9 @@ class mini_LiTOY:
                         entry1,
                         entry2,
                     )
+            # Save data after all questions for the pair are processed (or skipped)
+            self.store_data()
+            self.p("Stored data to file")
 
     @typechecked
     def display_comparison_table(self, entry1: LockedDict, entry2: LockedDict) -> None:
