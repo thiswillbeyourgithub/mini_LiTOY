@@ -48,6 +48,31 @@ def existing_output_json_file(tmp_path, sample_entry_text):
         json.dump(data, f, indent=4)
     return output_file
 
+@pytest.fixture
+def existing_output_toml_file(tmp_path, sample_entry_text):
+    """Creates a temporary existing TOML output file with some data."""
+    output_file = tmp_path / "existing_output.toml"
+    data = []
+    for i, text in enumerate(sample_entry_text[:5]): # Only first 5 entries
+        # Create plain dicts as they would be after loading/before dumping TOML
+        entry = copy.deepcopy(mini_LiTOY.default_dict)
+        entry["entry"] = text
+        entry["id"] = str(uuid6.uuid6())
+        entry["g_ELO"] = mini_LiTOY.ELO_default + i # Slightly different ELOs
+        for q in mini_LiTOY.questions:
+            entry["all_ELO"][q]["q_ELO"] = mini_LiTOY.ELO_default + i
+        # Convert LockedDicts within the structure to plain dicts for TOML saving
+        entry_plain = {k: (v if not isinstance(v, LockedDict) else dict(v)) for k, v in entry.items()}
+        if "all_ELO" in entry_plain:
+             entry_plain["all_ELO"] = {q: dict(elo_data) for q, elo_data in entry_plain["all_ELO"].items()}
+        data.append(entry_plain) # Append the plain dict
+
+    # Wrap the list in a dictionary for TOML structure
+    data_wrapper = {"entries": data}
+    with open(output_file, 'w') as f:
+        toml.dump(data_wrapper, f, pretty=True)
+    return output_file
+
 
 @pytest.fixture(autouse=True)
 def clean_recovery_dir_fixture():
@@ -157,6 +182,20 @@ def test_init_loading_existing_json(existing_output_json_file, sample_entry_text
     assert isinstance(instance.alldata[0], LockedDict)
     assert isinstance(instance.alldata[0]["all_ELO"][mini_LiTOY.questions[0]], LockedDict)
 
+def test_init_loading_existing_toml(existing_output_toml_file, sample_entry_text):
+    """Test initialization loading data from an existing TOML file."""
+    mini_LiTOY.run_comparison_loop = lambda self: None
+    instance = mini_LiTOY(output_file=existing_output_toml_file)
+    assert len(instance.alldata) == 5 # Only 5 entries were in the existing file
+    assert instance.output_format == "toml"
+    assert instance.alldata[0]["entry"] == sample_entry_text[0]
+    assert instance.alldata[0]["g_ELO"] == mini_LiTOY.ELO_default + 0
+    assert instance.alldata[4]["entry"] == sample_entry_text[4]
+    assert instance.alldata[4]["g_ELO"] == mini_LiTOY.ELO_default + 4
+    # Check if loaded entries are LockedDicts
+    assert isinstance(instance.alldata[0], LockedDict)
+    assert isinstance(instance.alldata[0]["all_ELO"][mini_LiTOY.questions[0]], LockedDict)
+
 
 def test_init_loading_existing_and_adding_new_json(existing_output_json_file, sample_input_file, sample_entry_text):
     """Test initialization loading existing JSON and adding new entries from input."""
@@ -171,6 +210,25 @@ def test_init_loading_existing_and_adding_new_json(existing_output_json_file, sa
     assert instance.alldata[5]["g_ELO"] == mini_LiTOY.ELO_default
     assert instance.alldata[9]["entry"] == sample_entry_text[9]
     assert instance.alldata[9]["g_ELO"] == mini_LiTOY.ELO_default
+
+def test_init_loading_existing_and_adding_new_toml(existing_output_toml_file, sample_input_file, sample_entry_text):
+    """Test initialization loading existing TOML and adding new entries from input."""
+    mini_LiTOY.run_comparison_loop = lambda self: None
+    instance = mini_LiTOY(input_file=sample_input_file, output_file=existing_output_toml_file)
+    assert len(instance.alldata) == len(sample_entry_text) # All 10 entries should be present
+    assert instance.output_format == "toml"
+    # Check existing entries are loaded correctly
+    assert instance.alldata[0]["entry"] == sample_entry_text[0]
+    assert instance.alldata[0]["g_ELO"] == mini_LiTOY.ELO_default + 0
+    # Check new entries are added correctly
+    assert instance.alldata[5]["entry"] == sample_entry_text[5]
+    assert instance.alldata[5]["g_ELO"] == mini_LiTOY.ELO_default
+    assert instance.alldata[9]["entry"] == sample_entry_text[9]
+    assert instance.alldata[9]["g_ELO"] == mini_LiTOY.ELO_default
+    # Check types after loading and merging
+    assert isinstance(instance.alldata[0], LockedDict)
+    assert isinstance(instance.alldata[5], LockedDict)
+
 
 def test_update_elo():
     """Test the ELO update calculation."""
