@@ -168,8 +168,8 @@ class mini_LiTOY:
             self.p(f"Found {len(dup_i)} entries whose 'id' value is identical:", type="error")
             for i in dup_i:
                 self.p(i, type="error")
-        # if dup_t or dup_i:
-        #     raise Exception()
+        if dup_t or dup_i:
+            raise Exception(f"Found duplicate texts: '{dup_t}' (ids: '{dup_i}'")
 
         if self.alldata:
             max_id = max(
