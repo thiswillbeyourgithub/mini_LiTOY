@@ -193,7 +193,7 @@ class mini_LiTOY:
                     continue
                 if not any(entry["entry"] == line for entry in self.alldata):
                     max_id += 1
-                    entry = copy(self.default_dict)
+                    entry = copy.deepcopy(self.default_dict)
                     entry["entry"] = line
                     entry["id"] = max_id
                     self.alldata.append(entry)
