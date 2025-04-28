@@ -1,7 +1,7 @@
 import pytest
 import json
-# import toml # Use rtoml instead
-import rtoml as toml # Use rtoml for consistency
+# import toml # Use rtoml instead # No longer needed
+import rtoml # Use rtoml for consistency
 import uuid6
 import copy
 import shutil # Add this import
@@ -84,12 +84,12 @@ def clean_recovery_dir_fixture():
         elif item.is_dir():
             shutil.rmtree(item)
     yield # Test runs here
-    # Clean after test (optional, but good practice)
-    # for item in recovery_dir.glob('*'):
-    #     if item.is_file():
-    #         item.unlink()
-    #     elif item.is_dir():
-    #         shutil.rmtree(item)
+    # Clean after test
+    for item in recovery_dir.glob('*'):
+        if item.is_file():
+            item.unlink()
+        elif item.is_dir():
+            shutil.rmtree(item)
 
 
 # Tests for LockedDict
@@ -232,41 +232,48 @@ def test_init_loading_existing_and_adding_new_toml(existing_output_toml_file, sa
 
 def test_update_elo():
     """Test the ELO update calculation."""
-    # Mock instance needed only for ELO_norm
-    instance = type('obj', (object,), {'ELO_norm': mini_LiTOY.ELO_norm})()
+    # Use class attribute directly
+    elo_norm = mini_LiTOY.ELO_norm
     elo1, elo2 = 100, 100
     k1, k2 = 30, 30 # Initial K values
 
-    # Test case 1: Player 1 wins decisively (answer=1 -> score1=0.8, score2=0.2)
-    new_elo1, new_elo2 = mini_LiTOY.update_elo(instance, 1, elo1, elo2, k1, k2)
-    expected_score1 = 1 / (1 + 10**((100 - 100) / 40)) # 0.5
-    expected_score2 = 0.5
-    assert new_elo1 == round(100 + 30 * (0.8 - 0.5)) # 100 + 30 * 0.3 = 109
-    assert new_elo2 == round(100 + 30 * (0.2 - 0.5)) # 100 + 30 * -0.3 = 91
+    # Test case 1: Player 1 wins decisively (answer=1 -> score1=(5-1)/5=0.8, score2=0.2)
+    new_elo1, new_elo2 = mini_LiTOY.update_elo(mini_LiTOY, 1, elo1, elo2, k1, k2) # Pass class itself for classmethod access if needed, or just use elo_norm
+    expected_score1 = 1 / (1 + 10**((elo2 - elo1) / elo_norm)) # 0.5
+    expected_score2 = 1 - expected_score1 # 0.5
+    assert new_elo1 == round(elo1 + k1 * (0.8 - expected_score1)) # 100 + 30 * 0.3 = 109
+    assert new_elo2 == round(elo2 + k2 * (0.2 - expected_score2)) # 100 + 30 * -0.3 = 91
 
-    # Test case 2: Player 2 wins decisively (answer=5 -> score1=0.0, score2=1.0)
-    new_elo1, new_elo2 = mini_LiTOY.update_elo(instance, 5, elo1, elo2, k1, k2)
-    assert new_elo1 == round(100 + 30 * (0.0 - 0.5)) # 100 + 30 * -0.5 = 85
-    assert new_elo2 == round(100 + 30 * (1.0 - 0.5)) # 100 + 30 * 0.5 = 115
+    # Test case 2: Player 2 wins decisively (answer=5 -> score1=(5-5)/5=0.0, score2=1.0)
+    new_elo1, new_elo2 = mini_LiTOY.update_elo(mini_LiTOY, 5, elo1, elo2, k1, k2)
+    expected_score1 = 1 / (1 + 10**((elo2 - elo1) / elo_norm)) # 0.5
+    expected_score2 = 1 - expected_score1 # 0.5
+    assert new_elo1 == round(elo1 + k1 * (0.0 - expected_score1)) # 100 + 30 * -0.5 = 85
+    assert new_elo2 == round(elo2 + k2 * (1.0 - expected_score2)) # 100 + 30 * 0.5 = 115
 
-    # Test case 3: Draw (answer=3 -> score1=0.4, score2=0.6) - Note: ELO uses 5 steps, 3 is slightly favoring player 2
-    new_elo1, new_elo2 = mini_LiTOY.update_elo(instance, 3, elo1, elo2, k1, k2)
-    assert new_elo1 == round(100 + 30 * (0.4 - 0.5)) # 100 + 30 * -0.1 = 97
-    assert new_elo2 == round(100 + 30 * (0.6 - 0.5)) # 100 + 30 * 0.1 = 103
+    # Test case 3: Draw (answer=3 -> score1=(5-3)/5=0.4, score2=0.6) - Note: ELO uses 5 steps, 3 is slightly favoring player 2
+    new_elo1, new_elo2 = mini_LiTOY.update_elo(mini_LiTOY, 3, elo1, elo2, k1, k2)
+    expected_score1 = 1 / (1 + 10**((elo2 - elo1) / elo_norm)) # 0.5
+    expected_score2 = 1 - expected_score1 # 0.5
+    assert new_elo1 == round(elo1 + k1 * (0.4 - expected_score1)) # 100 + 30 * -0.1 = 97
+    assert new_elo2 == round(elo2 + k2 * (0.6 - expected_score2)) # 100 + 30 * 0.1 = 103
 
     # Test case 4: Higher ELO player wins as expected
     elo1, elo2 = 120, 80
-    expected_score1 = 1 / (1 + 10**((80 - 120) / 40)) # 1 / (1 + 10**(-1)) = 1 / 1.1 = ~0.909
+    k1, k2 = 20, 20 # Assume K decreased
+    expected_score1 = 1 / (1 + 10**((elo2 - elo1) / elo_norm)) # 1 / (1 + 10**(-40 / 40)) = 1 / (1 + 10**(-1)) = 1 / 1.1 = ~0.909
     expected_score2 = 1 - expected_score1 # ~0.091
-    # Player 1 wins (answer=2 -> score1=0.6, score2=0.4) - Less gain as it was expected
-    new_elo1, new_elo2 = mini_LiTOY.update_elo(instance, 2, elo1, elo2, k1, k2)
-    assert new_elo1 == round(120 + 30 * (0.6 - expected_score1)) # 120 + 30 * ~-0.309 = ~111
-    assert new_elo2 == round(80 + 30 * (0.4 - expected_score2))  # 80 + 30 * ~0.309 = ~89
+    # Player 1 wins (answer=2 -> score1=(5-2)/5=0.6, score2=0.4) - Less gain as it was expected
+    new_elo1, new_elo2 = mini_LiTOY.update_elo(mini_LiTOY, 2, elo1, elo2, k1, k2)
+    assert new_elo1 == round(elo1 + k1 * (0.6 - expected_score1)) # 120 + 20 * (0.6 - 0.909) = 120 + 20 * ~-0.309 = ~114
+    assert new_elo2 == round(elo2 + k2 * (0.4 - expected_score2)) # 80 + 20 * (0.4 - 0.091) = 80 + 20 * ~0.309 = ~86
 
-    # Test case 5: Lower ELO player wins (answer=4 -> score1=0.2, score2=0.8) - More gain
-    new_elo1, new_elo2 = mini_LiTOY.update_elo(instance, 4, elo1, elo2, k1, k2)
-    assert new_elo1 == round(120 + 30 * (0.2 - expected_score1)) # 120 + 30 * ~-0.709 = ~99
-    assert new_elo2 == round(80 + 30 * (0.8 - expected_score2))  # 80 + 30 * ~0.709 = ~101
+    # Test case 5: Lower ELO player wins (answer=4 -> score1=(5-4)/5=0.2, score2=0.8) - More gain
+    new_elo1, new_elo2 = mini_LiTOY.update_elo(mini_LiTOY, 4, elo1, elo2, k1, k2)
+    expected_score1 = 1 / (1 + 10**((elo2 - elo1) / elo_norm)) # ~0.909
+    expected_score2 = 1 - expected_score1 # ~0.091
+    assert new_elo1 == round(elo1 + k1 * (0.2 - expected_score1)) # 120 + 20 * (0.2 - 0.909) = 120 + 20 * ~-0.709 = ~106
+    assert new_elo2 == round(elo2 + k2 * (0.8 - expected_score2)) # 80 + 20 * (0.8 - 0.091) = 80 + 20 * ~0.709 = ~94
 
 def test_store_data_json(tmp_path):
     """Test storing data to a JSON file."""
@@ -316,7 +323,7 @@ def test_store_data_toml(tmp_path):
     assert output_file.exists()
     with open(output_file, 'r') as f:
         # Load the wrapper dict and extract the list
-        loaded_data_wrapper = toml.load(f)
+        loaded_data_wrapper = rtoml.load(f) # Use rtoml here
     assert "entries" in loaded_data_wrapper
     loaded_data = loaded_data_wrapper["entries"]
     assert isinstance(loaded_data, list)
@@ -328,7 +335,7 @@ def test_store_data_toml(tmp_path):
     assert len(recovery_files) == 1
     with open(recovery_files[0], 'r') as f:
         # Use rtoml to load recovery file as well, expecting the wrapper
-        recovery_data_wrapper = toml.load(f)
+        recovery_data_wrapper = rtoml.load(f) # Use rtoml here
     assert "entries" in recovery_data_wrapper
     recovery_data = recovery_data_wrapper["entries"]
     assert isinstance(recovery_data, list)
