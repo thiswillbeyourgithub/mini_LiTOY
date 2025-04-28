@@ -257,7 +257,11 @@ def test_store_data_toml(tmp_path):
 
     assert output_file.exists()
     with open(output_file, 'r') as f:
-        loaded_data = toml.load(f)
+        # Load the wrapper dict and extract the list
+        loaded_data_wrapper = toml.load(f)
+    assert "entries" in loaded_data_wrapper
+    loaded_data = loaded_data_wrapper["entries"]
+    assert isinstance(loaded_data, list)
     assert len(loaded_data) == 1
     assert loaded_data[0]["entry"] == "Test Entry 1 TOML"
     assert loaded_data[0]["id"] == entry1["id"]
@@ -265,8 +269,11 @@ def test_store_data_toml(tmp_path):
     recovery_files = list(recovery_dir.glob("*"))
     assert len(recovery_files) == 1
     with open(recovery_files[0], 'r') as f:
-        # Use rtoml to load recovery file as well
-        recovery_data = toml.load(f)
+        # Use rtoml to load recovery file as well, expecting the wrapper
+        recovery_data_wrapper = toml.load(f)
+    assert "entries" in recovery_data_wrapper
+    recovery_data = recovery_data_wrapper["entries"]
+    assert isinstance(recovery_data, list)
     # Convert loaded TOML data (which will be plain dicts) back to LockedDicts
     # for comparison if necessary, or compare structure/values directly.
     # For simplicity, let's compare the plain dict versions.

@@ -120,10 +120,15 @@ class mini_LiTOY:
                 if output_format == "json":
                     data = json.load(file)
                 elif output_format == "toml":
-                    data = toml.load(file)
+                    # Load the wrapper dictionary and extract the list
+                    data_wrapper = toml.load(file)
+                    if not isinstance(data_wrapper, dict) or "entries" not in data_wrapper:
+                         raise ValueError("TOML file must contain a top-level 'entries' key holding a list of dictionaries")
+                    data = data_wrapper["entries"]
                 else:
                     raise ValueError(f"output_format must be 'json' or 'toml', not '{output_format}'")
-                assert isinstance(data, list) and all(isinstance(item, dict) for item in data), "Output file must be a list of dictionaries"
+                if not isinstance(data, list) or not all(isinstance(item, dict) for item in data):
+                     raise ValueError("The 'entries' key in the TOML file must hold a list of dictionaries")
             self.alldata = [self.LockedDict(di) for di in data]
         else:
             self.alldata = []
@@ -417,25 +422,30 @@ class mini_LiTOY:
                     return [deep_convert_to_dict(elem) for elem in obj]
                 else:
                     return obj
-            data_to_dump = [deep_convert_to_dict(item) for item in self.alldata]
+            data_to_dump_list = [deep_convert_to_dict(item) for item in self.alldata]
+            # Wrap the list in a dictionary for TOML compatibility
+            data_to_dump_wrapper = {"entries": data_to_dump_list}
 
 
         # always save to recovery file
         with open(self.recovery_file, 'w', encoding='utf-8') as file:
             if self.output_format == "json":
-                # json handles dict subclasses fine
+                # json handles dict subclasses fine, dump the list directly
                 json.dump(self.alldata, file, ensure_ascii=False, indent=4)
             elif self.output_format == "toml":
-                toml.dump(data_to_dump, file, pretty=True)
+                # Dump the wrapper dictionary for TOML
+                toml.dump(data_to_dump_wrapper, file, pretty=True)
             else:
                 raise ValueError(self.output_format)
 
         # save to main output file
         with open(self.output_file, 'w', encoding='utf-8') as file:
             if self.output_format == "json":
+                # json handles dict subclasses fine, dump the list directly
                 json.dump(self.alldata, file, ensure_ascii=False, indent=4)
             elif self.output_format == "toml":
-                toml.dump(data_to_dump, file, pretty=True)
+                # Dump the wrapper dictionary for TOML
+                toml.dump(data_to_dump_wrapper, file, pretty=True)
             else:
                 raise ValueError(self.output_format)
 
