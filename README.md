@@ -1,6 +1,8 @@
 # mini_LiTOY
 Minimalist approach to the [LiTOY task sorting algorithm](https://github.com/thiswillbeyourgithub/LiTOY-aka-List-that-Outlives-You) based on [ELO scores](https://en.wikipedia.org/wiki/Elo_rating_system).
 
+*Note: for an android version with similar intention, take a look at [rank-my-favs](https://github.com/dessalines/rank-my-favs/)*
+
 # Features
 * Minimalist
 * Statically typed via typeguard
