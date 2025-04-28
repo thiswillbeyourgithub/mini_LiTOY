@@ -108,7 +108,7 @@ class mini_LiTOY:
         self.lines = []
         if self.output_file and Path(self.output_file).exists():
             self.p(f"Loading data from {self.output_file}")
-            with open(self.output_json, 'r') as file:
+            with open(self.output_file, 'r') as file:
                 if output_format == "json":
                     data = json.load(file)
                 elif output_format == "toml":
@@ -408,7 +408,7 @@ class mini_LiTOY:
             else:
                 raise ValueError(self.output_format)
 
-        with open(self.output_json, 'w', encoding='utf-8') as file:
+        with open(self.output_file, 'w', encoding='utf-8') as file:
             if self.output_format == "json":
                 json.dump(self.alldata, file, ensure_ascii=False, indent=4)
             elif self.output_format == "toml":
