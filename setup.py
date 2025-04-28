@@ -1,4 +1,3 @@
-
 from setuptools import setup, find_packages
 from setuptools.command.install import install
 
@@ -13,22 +12,33 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/thiswillbeyourgithub/mini_LiTOY",
     packages=find_packages(),
-
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: OS Independent",
     ],
     license="GPLv3",
-    keywords=["tasks", "sorting", "ELO", "scoring", "organization", "smart", "tool", "productivity", "litoy", "list", "life", "learning", "optimization"],
+    keywords=[
+        "tasks",
+        "sorting",
+        "ELO",
+        "scoring",
+        "organization",
+        "smart",
+        "tool",
+        "productivity",
+        "litoy",
+        "list",
+        "life",
+        "learning",
+        "optimization",
+    ],
     python_requires=">=3.11",
-
     entry_points={
-        'console_scripts': [
-            'mlitoy=mini_LiTOY.__init__:cli_launcher',
+        "console_scripts": [
+            "mlitoy=mini_LiTOY.__init__:cli_launcher",
         ],
     },
-
     install_requires=[
         "fire >= 0.6.0",
         "typeguard >= 0.4.3",
@@ -38,5 +48,4 @@ setup(
         "rtoml >= 0.11.0",
         "uuid6 >= 2024.7.10",
     ],
-
 )

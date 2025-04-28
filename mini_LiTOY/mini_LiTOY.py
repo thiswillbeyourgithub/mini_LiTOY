@@ -29,7 +29,9 @@ class LockedDict(dict):
 
     def __setitem__(self, key, value):
         if self._locked and key not in self:
-            raise KeyError(f"Cannot create new key '{key}'. Only existing keys can be modified.")
+            raise KeyError(
+                f"Cannot create new key '{key}'. Only existing keys can be modified."
+            )
         super().__setitem__(key, value)
 
     def __deepcopy__(self, memo):
@@ -37,10 +39,10 @@ class LockedDict(dict):
         assert id(new_instance) != id(self)
         # Use copy.deepcopy to ensure nested structures are also copied deeply
         new_instance = LockedDict()
-        new_instance._locked = False # Temporarily unlock to populate
+        new_instance._locked = False  # Temporarily unlock to populate
         for k, v in self.items():
             new_instance[k] = copy.deepcopy(v, memo)
-        new_instance._locked = True # Re-lock
+        new_instance._locked = True  # Re-lock
         return new_instance
 
 
@@ -57,18 +59,18 @@ class mini_LiTOY:
     LockedDict = LockedDict
     default_subdict = dict(
         {
-        "q_n_comparison": 0,
-        "q_ELO": ELO_default,
+            "q_n_comparison": 0,
+            "q_ELO": ELO_default,
         }
     )
     default_dict = LockedDict(
         {
-        "entry": None,
-        "g_n_comparison": 0,
-        "g_ELO": ELO_default,
-        "all_ELO": {},
-        "id": None,
-        "metadata": {},
+            "entry": None,
+            "g_n_comparison": 0,
+            "g_ELO": ELO_default,
+            "all_ELO": {},
+            "id": None,
+            "metadata": {},
         }
     )
     for q in questions:
@@ -81,7 +83,7 @@ class mini_LiTOY:
         output_file: Optional[Union[PosixPath, str, io.TextIOWrapper]] = None,
         callback: Optional[Callable] = None,
         verbose: bool = False,
-        ):
+    ):
         """
         Parameters
         ----------
@@ -94,7 +96,9 @@ class mini_LiTOY:
         self.verbose = verbose
         self.p(f"Logdir: {log_dir}")
         self.p(f"recovery_dir: {recovery_dir}")
-        self.p(f"Initializing mini_LiTOY with input_file={input_file}, output_file={output_file}")
+        self.p(
+            f"Initializing mini_LiTOY with input_file={input_file}, output_file={output_file}"
+        )
         self.recovery_file = recovery_dir / str(int(time.time()))
 
         if not input_file and not output_file:
@@ -106,7 +110,10 @@ class mini_LiTOY:
             raise ValueError("output_file must be provided")
         # Get suffix without the leading dot
         output_format = Path(output_file).suffix[1:]
-        assert output_format in ["json", "toml"], f"output_file extension must be 'json' or 'toml' not '{output_format}'"
+        assert output_format in [
+            "json",
+            "toml",
+        ], f"output_file extension must be 'json' or 'toml' not '{output_format}'"
 
         self.output_file = output_file
         self.callback = callback
@@ -116,19 +123,30 @@ class mini_LiTOY:
         self.lines = []
         if self.output_file and Path(self.output_file).exists():
             self.p(f"Loading data from {self.output_file}")
-            with open(self.output_file, 'r') as file:
+            with open(self.output_file, "r") as file:
                 if output_format == "json":
                     data = json.load(file)
                 elif output_format == "toml":
                     # Load the wrapper dictionary and extract the list
                     data_wrapper = toml.load(file)
-                    if not isinstance(data_wrapper, dict) or "entries" not in data_wrapper:
-                         raise ValueError("TOML file must contain a top-level 'entries' key holding a list of dictionaries")
+                    if (
+                        not isinstance(data_wrapper, dict)
+                        or "entries" not in data_wrapper
+                    ):
+                        raise ValueError(
+                            "TOML file must contain a top-level 'entries' key holding a list of dictionaries"
+                        )
                     data = data_wrapper["entries"]
                 else:
-                    raise ValueError(f"output_format must be 'json' or 'toml', not '{output_format}'")
-                if not isinstance(data, list) or not all(isinstance(item, dict) for item in data):
-                     raise ValueError("The 'entries' key in the TOML file must hold a list of dictionaries")
+                    raise ValueError(
+                        f"output_format must be 'json' or 'toml', not '{output_format}'"
+                    )
+                if not isinstance(data, list) or not all(
+                    isinstance(item, dict) for item in data
+                ):
+                    raise ValueError(
+                        "The 'entries' key in the TOML file must hold a list of dictionaries"
+                    )
             self.alldata = [self.LockedDict(di) for di in data]
         else:
             self.alldata = []
@@ -137,30 +155,45 @@ class mini_LiTOY:
         for ie, entry in enumerate(self.alldata):
             for k in entry.keys():
                 assert k in [
-                    "entry","g_n_comparison", "g_ELO", "all_ELO", "id", "metadata",
+                    "entry",
+                    "g_n_comparison",
+                    "g_ELO",
+                    "all_ELO",
+                    "id",
+                    "metadata",
                 ], f"Unexpected key {k} in entry #{ie}"
-            for k in ["entry","g_n_comparison", "g_ELO", "all_ELO", "id", "metadata"]:
-                assert k in entry.keys(), (
-                    f"Entry #{ie} missing key {k}:\n{entry}"
-                )
+            for k in ["entry", "g_n_comparison", "g_ELO", "all_ELO", "id", "metadata"]:
+                assert k in entry.keys(), f"Entry #{ie} missing key {k}:\n{entry}"
             for q in self.questions:
                 if q not in entry["all_ELO"]:
-                    entry["all_ELO"][q] = LockedDict({"q_n_comparison": 0, "q_ELO": self.ELO_default})
+                    entry["all_ELO"][q] = LockedDict(
+                        {"q_n_comparison": 0, "q_ELO": self.ELO_default}
+                    )
 
             for q, d in entry["all_ELO"].items():
                 assert isinstance(d, dict)
-                assert q in self.questions, f"Entry #{ie} contains a question that is not part of self.questions: '{q}'"
+                assert (
+                    q in self.questions
+                ), f"Entry #{ie} contains a question that is not part of self.questions: '{q}'"
                 if not isinstance(d, self.LockedDict):
                     entry["all_ELO"][q] = self.LockedDict(d)
                     d = self.LockedDict(d)
                 assert isinstance(d, self.LockedDict)
-                assert isinstance(q, str), f"questions in entry #{ie} entry['all_ELO'] must be strings not {type(q)} '({q})'"
-                assert all(dd in ["q_n_comparison", "q_ELO"] for dd in  d.keys()), f"Invalid entry['all_ELO']: {q}:{d} in entry #{ie}"
-                assert all(k in d.keys() for k in ["q_n_comparison", "q_ELO"]), f"Invalid entry['all_ELO']: {q}:{d} in entry #{ie}"
+                assert isinstance(
+                    q, str
+                ), f"questions in entry #{ie} entry['all_ELO'] must be strings not {type(q)} '({q})'"
+                assert all(
+                    dd in ["q_n_comparison", "q_ELO"] for dd in d.keys()
+                ), f"Invalid entry['all_ELO']: {q}:{d} in entry #{ie}"
+                assert all(
+                    k in d.keys() for k in ["q_n_comparison", "q_ELO"]
+                ), f"Invalid entry['all_ELO']: {q}:{d} in entry #{ie}"
 
             # all question of the dict must be part of self.questions, but the dict can have fewer, in that case they will be created here
             for q in entry["all_ELO"].keys():
-                assert q in self.questions, f"Entry #{ie} contains a question that is not part of self.questions: '{q}'"
+                assert (
+                    q in self.questions
+                ), f"Entry #{ie} contains a question that is not part of self.questions: '{q}'"
 
         # check no entries have the same name or id
         texts = [ent["entry"] for ent in self.alldata]
@@ -174,11 +207,17 @@ class mini_LiTOY:
             if ids.count(i) > 1:
                 dup_i.add(i)
         if dup_t:
-            self.p(f"Found {len(dup_t)} entries whose 'entry' text is identical:", type="error")
+            self.p(
+                f"Found {len(dup_t)} entries whose 'entry' text is identical:",
+                type="error",
+            )
             for t in dup_t:
                 self.p(t, type="error")
         if dup_i:
-            self.p(f"Found {len(dup_i)} entries whose 'id' value is identical:", type="error")
+            self.p(
+                f"Found {len(dup_i)} entries whose 'id' value is identical:",
+                type="error",
+            )
             for i in dup_i:
                 self.p(i, type="error")
         if dup_t or dup_i:
@@ -187,7 +226,7 @@ class mini_LiTOY:
 
         if input_file:
             self.p(f"Reading input from {input_file}")
-            with open(input_file, 'r') as file:
+            with open(input_file, "r") as file:
                 input_content = file.read()
             for line in input_content.splitlines():
                 line = line.strip()
@@ -215,33 +254,35 @@ class mini_LiTOY:
             self.p("Picking two entries for comparison")
             entry1, entry2 = self.pick_two_entries()
             assert entry1 in self.alldata and entry2 in self.alldata
-            self.p(f"Displaying comparison table for entries {entry1['id']} and {entry2['id']}")
+            self.p(
+                f"Displaying comparison table for entries {entry1['id']} and {entry2['id']}"
+            )
             self.display_comparison_table(entry1, entry2)
             bindings = KeyBindings()
 
             self.skip = False
 
             @bindings.add(Keys.Enter)
-            @bindings.add(' ')
-            @bindings.add('s')
-            @bindings.add('1')
-            @bindings.add('2')
-            @bindings.add('3')
-            @bindings.add('4')
-            @bindings.add('5')
-            @bindings.add('a')
-            @bindings.add('z')
-            @bindings.add('e')
-            @bindings.add('r')
-            @bindings.add('t')
+            @bindings.add(" ")
+            @bindings.add("s")
+            @bindings.add("1")
+            @bindings.add("2")
+            @bindings.add("3")
+            @bindings.add("4")
+            @bindings.add("5")
+            @bindings.add("a")
+            @bindings.add("z")
+            @bindings.add("e")
+            @bindings.add("r")
+            @bindings.add("t")
             def _(event):
                 key = event.key_sequence[0].key
                 if key is Keys.Enter:
                     key = event.app.current_buffer.text.strip()
                 if key == "s" or key == " ":
                     self.skip = True
-                elif key in 'azert':
-                    key = str('azert'.index(key) + 1)
+                elif key in "azert":
+                    key = str("azert".index(key) + 1)
                 event.app.exit(result=key)
 
             answers = {}
@@ -252,7 +293,10 @@ class mini_LiTOY:
                     prefix = ""
 
                 try:
-                    answers[q] = prompt(f"{prefix}{q} (1-5 or a-z-e-r-t and s or ' ' to skip): ", key_bindings=bindings)
+                    answers[q] = prompt(
+                        f"{prefix}{q} (1-5 or a-z-e-r-t and s or ' ' to skip): ",
+                        key_bindings=bindings,
+                    )
                 except (KeyboardInterrupt, EOFError):
                     self.p("Exiting due to keyboard interrupt")
                     raise SystemExit("\nExiting. Goodbye!")
@@ -265,21 +309,64 @@ class mini_LiTOY:
                 answers[q] = int(answers[q])
 
                 n_comparison_1 = entry1["all_ELO"][q]["q_n_comparison"]
-                K1 = self.inertia_values[n_comparison_1] if n_comparison_1 <= len(self.inertia_values) else self.inertia_values[-1]
+                K1 = (
+                    self.inertia_values[n_comparison_1]
+                    if n_comparison_1 <= len(self.inertia_values)
+                    else self.inertia_values[-1]
+                )
                 n_comparison_2 = entry2["all_ELO"][q]["q_n_comparison"]
-                K2 = self.inertia_values[n_comparison_2] if n_comparison_2 <= len(self.inertia_values) else self.inertia_values[-1]
+                K2 = (
+                    self.inertia_values[n_comparison_2]
+                    if n_comparison_2 <= len(self.inertia_values)
+                    else self.inertia_values[-1]
+                )
 
-                new_elo1, new_elo2 = self.update_elo(answers[q], entry1["all_ELO"][q]["q_ELO"], entry2["all_ELO"][q]["q_ELO"], K1, K2)
-                entry1["all_ELO"][q]["q_ELO"], entry2["all_ELO"][q]["q_ELO"] = new_elo1, new_elo2
+                new_elo1, new_elo2 = self.update_elo(
+                    answers[q],
+                    entry1["all_ELO"][q]["q_ELO"],
+                    entry2["all_ELO"][q]["q_ELO"],
+                    K1,
+                    K2,
+                )
+                entry1["all_ELO"][q]["q_ELO"], entry2["all_ELO"][q]["q_ELO"] = (
+                    new_elo1,
+                    new_elo2,
+                )
                 self.p(f"Updated ELOs: entry1={new_elo1}, entry2={new_elo2}")
 
                 entry1["all_ELO"][q]["q_n_comparison"] += 1
                 entry2["all_ELO"][q]["q_n_comparison"] += 1
 
-                entry1["g_ELO"] = int(sum([entry1["all_ELO"][_q]["q_ELO"] for _q in entry1["all_ELO"].keys()]) / len(self.questions))
-                entry2["g_ELO"] = int(sum([entry2["all_ELO"][_q]["q_ELO"] for _q in entry2["all_ELO"].keys()]) / len(self.questions))
-                entry1["g_n_comparison"] = sum([entry1["all_ELO"][_q]["q_n_comparison"] for _q in entry1["all_ELO"].keys()])
-                entry2["g_n_comparison"] = sum([entry2["all_ELO"][_q]["q_n_comparison"] for _q in entry2["all_ELO"].keys()])
+                entry1["g_ELO"] = int(
+                    sum(
+                        [
+                            entry1["all_ELO"][_q]["q_ELO"]
+                            for _q in entry1["all_ELO"].keys()
+                        ]
+                    )
+                    / len(self.questions)
+                )
+                entry2["g_ELO"] = int(
+                    sum(
+                        [
+                            entry2["all_ELO"][_q]["q_ELO"]
+                            for _q in entry2["all_ELO"].keys()
+                        ]
+                    )
+                    / len(self.questions)
+                )
+                entry1["g_n_comparison"] = sum(
+                    [
+                        entry1["all_ELO"][_q]["q_n_comparison"]
+                        for _q in entry1["all_ELO"].keys()
+                    ]
+                )
+                entry2["g_n_comparison"] = sum(
+                    [
+                        entry2["all_ELO"][_q]["q_n_comparison"]
+                        for _q in entry2["all_ELO"].keys()
+                    ]
+                )
 
                 assert entry1 in self.alldata and entry2 in self.alldata
 
@@ -302,18 +389,35 @@ class mini_LiTOY:
 
         table = Table(title="Comparison", width=terminal_width)
 
-        table.add_column("Entries", justify="center", no_wrap=True, width=terminal_width//5)
-        table.add_column(str(entry1['id']), justify="center", width = terminal_width//5*2)
-        table.add_column(str(entry2['id']), justify="center", width = terminal_width//5*2)
+        table.add_column(
+            "Entries", justify="center", no_wrap=True, width=terminal_width // 5
+        )
+        table.add_column(
+            str(entry1["id"]), justify="center", width=terminal_width // 5 * 2
+        )
+        table.add_column(
+            str(entry2["id"]), justify="center", width=terminal_width // 5 * 2
+        )
 
-
-        table.add_row("[bold]Content", "[bold]" + str(entry1["entry"]), "[bold]" + str(entry2["entry"]))
+        table.add_row(
+            "[bold]Content",
+            "[bold]" + str(entry1["entry"]),
+            "[bold]" + str(entry2["entry"]),
+        )
         table.add_row("", "", "")
         table.add_row("", "", "")
-        table.add_row("[bold]Nb compar", str(entry1["g_n_comparison"]), str(entry2["g_n_comparison"]))
+        table.add_row(
+            "[bold]Nb compar",
+            str(entry1["g_n_comparison"]),
+            str(entry2["g_n_comparison"]),
+        )
         table.add_row("[bold]Global ELO", str(entry1["g_ELO"]), str(entry2["g_ELO"]))
         for q in self.questions:
-            table.add_row(f"[bold]{q[:10]}...", str(entry1["all_ELO"][q]["q_ELO"]), str(entry2["all_ELO"][q]["q_ELO"]))
+            table.add_row(
+                f"[bold]{q[:10]}...",
+                str(entry1["all_ELO"][q]["q_ELO"]),
+                str(entry2["all_ELO"][q]["q_ELO"]),
+            )
 
         metadata_keys = []
         if entry1["metadata"]:
@@ -344,7 +448,9 @@ class mini_LiTOY:
         self.console.print(table)
 
     @typechecked
-    def update_elo(self, answer: int, elo1: int, elo2: int, k1: int, k2: int) -> tuple[int, int]:
+    def update_elo(
+        self, answer: int, elo1: int, elo2: int, k1: int, k2: int
+    ) -> tuple[int, int]:
         """
         Update ELO scores based on the answer.
 
@@ -398,9 +504,9 @@ class mini_LiTOY:
 
     @typechecked
     def store_data(self) -> None:
-        if not hasattr(self, 'output_file') or not self.output_file:
+        if not hasattr(self, "output_file") or not self.output_file:
             raise AttributeError("Missing attribute: 'output_file'")
-        if not hasattr(self, 'alldata') or not isinstance(self.alldata, list):
+        if not hasattr(self, "alldata") or not isinstance(self.alldata, list):
             raise AttributeError("Missing or invalid attribute: 'alldata'")
 
         # Convert LockedDict to dict for serialization if needed
@@ -408,6 +514,7 @@ class mini_LiTOY:
         if self.output_format == "toml":
             # rtoml cannot serialize subclasses of dict, convert to plain dict
             data_to_dump = [dict(item) for item in self.alldata]
+
             # Deep conversion might be needed if LockedDict contains nested LockedDicts,
             # but current structure seems flat enough for this shallow conversion.
             # Let's double-check the structure: alldata is List[LockedDict],
@@ -416,19 +523,21 @@ class mini_LiTOY:
             def deep_convert_to_dict(obj):
                 if isinstance(obj, LockedDict):
                     return {k: deep_convert_to_dict(v) for k, v in obj.items()}
-                elif isinstance(obj, dict): # Handle regular dicts within LockedDict too
+                elif isinstance(
+                    obj, dict
+                ):  # Handle regular dicts within LockedDict too
                     return {k: deep_convert_to_dict(v) for k, v in obj.items()}
                 elif isinstance(obj, list):
                     return [deep_convert_to_dict(elem) for elem in obj]
                 else:
                     return obj
+
             data_to_dump_list = [deep_convert_to_dict(item) for item in self.alldata]
             # Wrap the list in a dictionary for TOML compatibility
             data_to_dump_wrapper = {"entries": data_to_dump_list}
 
-
         # always save to recovery file
-        with open(self.recovery_file, 'w', encoding='utf-8') as file:
+        with open(self.recovery_file, "w", encoding="utf-8") as file:
             if self.output_format == "json":
                 # json handles dict subclasses fine, dump the list directly
                 json.dump(self.alldata, file, ensure_ascii=False, indent=4)
@@ -439,7 +548,7 @@ class mini_LiTOY:
                 raise ValueError(self.output_format)
 
         # save to main output file
-        with open(self.output_file, 'w', encoding='utf-8') as file:
+        with open(self.output_file, "w", encoding="utf-8") as file:
             if self.output_format == "json":
                 # json handles dict subclasses fine, dump the list directly
                 json.dump(self.alldata, file, ensure_ascii=False, indent=4)
@@ -463,9 +572,11 @@ class mini_LiTOY:
             raise ValueError(type)
         return message
 
+
 mini_LiTOY.__doc__ = mini_LiTOY.__init__.__doc__
 
 console = Console()
+
 
 @typechecked
 def erro(message: str) -> str:
@@ -492,7 +603,11 @@ except Exception as err:
         par = Path(log_dir).parent.parent.parent
         assert par.exists() and par.is_dir()
     except Exception as err2:
-        raise Exception(erro(f"# Errors when trying to find an appropriate log dir:\n- '{err}'\n- '{err2}'"))
+        raise Exception(
+            erro(
+                f"# Errors when trying to find an appropriate log dir:\n- '{err}'\n- '{err2}'"
+            )
+        )
 
 log_dir = Path(log_dir)
 par = Path(log_dir).parent.parent.parent
@@ -501,14 +616,18 @@ log_dir.mkdir(parents=True, exist_ok=True)
 log_file = str((log_dir / "mini_litoy.logs.txt").resolve().absolute())
 
 # Configure logging
-logging.basicConfig(filename=log_file, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    filename=log_file,
+    level=logging.DEBUG,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
 log = logging.getLogger()
 
 cache_dir = Path(
-        user_cache_dir(
-            appname="mini_LiTOY",
-            version=mini_LiTOY.VERSION,
-        )
+    user_cache_dir(
+        appname="mini_LiTOY",
+        version=mini_LiTOY.VERSION,
+    )
 )
 par = cache_dir.parent.parent
 assert par.exists() and par.is_dir()
