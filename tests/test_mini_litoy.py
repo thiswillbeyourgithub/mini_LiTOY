@@ -1,8 +1,10 @@
 import pytest
 import json
-import toml
+# import toml # Use rtoml instead
+import rtoml as toml # Use rtoml for consistency
 import uuid6
 import copy
+import shutil # Add this import
 from pathlib import Path
 from mini_LiTOY.mini_LiTOY import mini_LiTOY, LockedDict, recovery_dir
 
@@ -45,6 +47,25 @@ def existing_output_json_file(tmp_path, sample_entry_text):
     with open(output_file, 'w') as f:
         json.dump(data, f, indent=4)
     return output_file
+
+
+@pytest.fixture(autouse=True)
+def clean_recovery_dir_fixture():
+    """Cleans the recovery directory before and after each test function."""
+    # Clean before test
+    for item in recovery_dir.glob('*'):
+        if item.is_file():
+            item.unlink()
+        elif item.is_dir():
+            shutil.rmtree(item)
+    yield # Test runs here
+    # Clean after test (optional, but good practice)
+    # for item in recovery_dir.glob('*'):
+    #     if item.is_file():
+    #         item.unlink()
+    #     elif item.is_dir():
+    #         shutil.rmtree(item)
+
 
 # Tests for LockedDict
 def test_locked_dict_init():
