@@ -213,8 +213,12 @@ def test_store_data_json(tmp_path):
     assert loaded_data[0]["entry"] == "Test Entry 1"
     assert loaded_data[1]["entry"] == "Test Entry 2"
     assert loaded_data[0]["id"] == entry1["id"]
-    # Check recovery file also exists
-    assert len(list(recovery_dir.glob("*"))) == 1
+    # Check recovery file also exists and contains the saved data
+    recovery_files = list(recovery_dir.glob("*"))
+    assert len(recovery_files) == 1
+    with open(recovery_files[0], 'r') as f:
+        recovery_data = json.load(f)
+    assert recovery_data == loaded_data
 
 def test_store_data_toml(tmp_path):
     """Test storing data to a TOML file."""
@@ -236,8 +240,18 @@ def test_store_data_toml(tmp_path):
     assert len(loaded_data) == 1
     assert loaded_data[0]["entry"] == "Test Entry 1 TOML"
     assert loaded_data[0]["id"] == entry1["id"]
-    # Check recovery file also exists
-    assert len(list(recovery_dir.glob("*"))) == 1
+    # Check recovery file also exists and contains the saved data
+    recovery_files = list(recovery_dir.glob("*"))
+    assert len(recovery_files) == 1
+    with open(recovery_files[0], 'r') as f:
+        # Use rtoml to load recovery file as well
+        recovery_data = toml.load(f)
+    # Convert loaded TOML data (which will be plain dicts) back to LockedDicts
+    # for comparison if necessary, or compare structure/values directly.
+    # For simplicity, let's compare the plain dict versions.
+    # The main code converts to plain dicts before dumping to TOML,
+    # so loaded_data and recovery_data should both be lists of plain dicts.
+    assert recovery_data == loaded_data
 
 # TODO: Add tests for pick_two_entries (might need mocking random)
 # TODO: Add tests for run_comparison_loop (needs mocking prompt_toolkit and potentially callback)
