@@ -36,6 +36,7 @@ setup(
         "prompt-toolkit>=3.0.40",
         "platformdirs >= 4.2.2",
         "rtoml >= 0.11.0",
+        "uuid6 >= 2024.7.10",
     ],
 
 )
